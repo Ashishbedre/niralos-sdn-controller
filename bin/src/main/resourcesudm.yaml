@@ -1,0 +1,42 @@
+---
+sbi:
+  server:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/udm.key"
+    cert: "/niral_config/tls/udm.crt"
+  client:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/udm.key"
+    cert: "/niral_config/tls/udm.crt"
+udm:
+  hnet:
+  - id: 1
+    scheme: 1
+    key: "/niral_config/hnet/curve25519-1.key"
+  - id: 2
+    scheme: 2
+    key: "/niral_config/hnet/secp256r1-2.key"
+  - id: 3
+    scheme: 1
+    key: "/niral_config/hnet/curve25519-3.key"
+  - id: 4
+    scheme: 2
+    key: "/niral_config/hnet/secp256r1-4.key"
+  - id: 5
+    scheme: 1
+    key: "/niral_config/hnet/curve25519-5.key"
+  - id: 6
+    scheme: 2
+    key: "/niral_config/hnet/secp256r1-6.key"
+  sbi:
+    dev: "eth0"
+    port: 7777
+scp:
+  sbi:
+  - name: "niralos-scp"
+    port: 7777
+parameter: null
+max: null
+time: null

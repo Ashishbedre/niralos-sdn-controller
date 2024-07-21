@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400&display=swap" rel="stylesheet" />
+
+	<link rel="stylesheet" href="fonts/icomoon/style.css" />
+
+	<link rel="stylesheet" href="css/owl.carousel.min.css" />
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="css/bootstrap.min.css" />
+
+	<!-- Style -->
+	<link rel="stylesheet" href="css/style.css" />
+
+	<title>NMA - Dashboard</title>
+</head>
+
+<body>
+	<div class="content">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-6">
+					<img src="images/undraw_remotely_2j6y.svg" alt="Image" class="img-fluid" />
+				</div>
+				<div class="col-md-6 contents">
+					<div class="row justify-content-center">
+						<div class="col-md-8">
+							<div class="mb-4">
+								<h3>Dashboard</h3>
+								<p class="mb-4">Find all details about the device here.</p>
+							</div>
+							<form action="#" th:action="@{/settings}" th:object="${internalData}" method="post">
+    <div class="form-group last mb-4"><label for="niralControllerIp">Niral Controller IP or Domain:</label> <input type="text" class="form-control" id="niralControllerIp" th:field="*{niralControllerIp}" name="niralControllerIp" /></div>
+    <div class="form-group last mb-4"><label for="niralGlobalControllerport">Global Controller Port:</label> <input type="text" class="form-control" id="niralGlobalControllerport" th:field="*{niralGlobalControllerport}" name="niralGlobalControllerport" /></div>
+    <div class="form-group last mb-4"><label for="amfIp">AMF IP:</label> <input type="text" class="form-control" id="amfIp" th:field="*{amfIp}" name="amfIp" /></div>
+    <div class="form-group last mb-4"><label for="amfPort">AMF PORT:</label> <input type="text" class="form-control" id="amfPort" th:field="*{amfPort}" name="amfPort" /></div>
+    <div class="form-group last mb-4"><label for="smfIp">SMF IP:</label> <input type="text" class="form-control" id="smfIp" th:field="*{smfIp}" name="smfIp" /></div>
+    <div class="form-group last mb-4"><label for="smfPort">SMF PORT:</label> <input type="text" class="form-control" id="smfPort" th:field="*{smfPort}" name="smfPort" /></div>
+    <div class="form-group last mb-4"><label for="nrfIp">NRF IP:</label> <input type="text" class="form-control" id="nrfIp" th:field="*{nrfIp}" name="nrfIp" /></div>
+    <div class="form-group last mb-4"><label for="nrfPort">NRF PORT:</label> <input type="text" class="form-control" id="nrfPort" th:field="*{nrfPort}" name="nrfPort" /></div>
+    <div class="form-group last mb-4"><label for="upfIp">UPF IP:</label> <input type="text" class="form-control" id="upfIp" th:field="*{upfIp}" name="upfIp" /></div>
+    <div class="form-group last mb-4"><label for="upfPort">UPF PORT:</label> <input type="text" class="form-control" id="upfPort" th:field="*{upfPort}" name="upfPort" /></div>
+    <div class="form-group last mb-4"><label for="udrIp">UDR IP:</label> <input type="text" class="form-control" id="udrIp" th:field="*{udrIp}" name="udrIp" /></div>
+    <div class="form-group last mb-4"><label for="udrPort">UDR PORT:</label> <input type="text" class="form-control" id="udrPort" th:field="*{udrPort}" name="udrPort" /></div>
+    <div class="form-group last mb-4"><label for="nssfIp">NSSF IP:</label> <input type="text" class="form-control" id="nssfIp" th:field="*{nssfIp}" name="nssfIp" /></div>
+    <div class="form-group last mb-4"><label for="nssfPort">NSSF PORT:</label> <input type="text" class="form-control" id="nssfPort" th:field="*{nssfPort}" name="nssfPort" /></div>
+     <div class="form-group last mb-4"><label for="upgIp">UPG IP:</label> <input type="text" class="form-control" id="upgIp" th:field="*{upgIp}" name="upgIp" /></div>
+    <div class="form-group last mb-4"><label for="upgPort">UPG PORT:</label> <input type="text" class="form-control" id="upgPort" th:field="*{upgPort}" name="upgPort" /></div>
+    <div class="form-group last mb-4"><label for="ausfIp">AUSF IP:</label> <input type="text" class="form-control" id="ausfIp" th:field="*{ausfIp}" name="ausfIp" /></div>
+    <div class="form-group last mb-4"><label for="ausfPort">AUSF PORT:</label> <input type="text" class="form-control" id="ausfPort" th:field="*{ausfPort}" name="ausfPort" /></div>
+    <div class="form-group last mb-4"><label for="pcfIp">PCF IP:</label> <input type="text" class="form-control" id="pcfIp" th:field="*{pcfIp}" name="pcfIp" /></div>
+    <div class="form-group last mb-4"><label for="pcfPort">PCP PORT:</label> <input type="text" class="form-control" id="pcfPort" th:field="*{pcfPort}" name="pcfPort" /></div>           
+    <div class="form-group last mb-4"><label for="udmIp">UDM IP:</label> <input type="text" class="form-control" id="udmIp" th:field="*{udmIp}" name="udmIp" /></div>
+    <div class="form-group last mb-4"><label for="udmPort">UDM PORT:</label> <input type="text" class="form-control" id="udmPort" th:field="*{udmPort}" name="udmPort" /></div>         
+    <div class="form-group last mb-4"><label for="scpIp">SCP IP:</label> <input type="text" class="form-control" id="scpIp" th:field="*{scpIp}" name="scpIp" /></div>
+    <div class="form-group last mb-4"><label for="scpPort">SCP PORT:</label> <input type="text" class="form-control" id="scpPort" th:field="*{scpPort}" name="scpPort" /></div>                             
+    <div class="form-group last mb-4"><label for="bsfIp">BSF IP:</label> <input type="text" class="form-control" id="bsfIp" th:field="*{bsfIp}" name="bsfIp" /></div>
+    <div class="form-group last mb-4"><label for="bsfPort">BSF PORT:</label> <input type="text" class="form-control" id="bsfPort" th:field="*{bsfPort}" name="bsfPort" /></div>
+    
+  
+    
+    
+    <div class="mt-4">
+        <button class="btn btn-block btn-primary" type="submit" name="submit-btn">Save</button>
+    </div>
+</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/main.js"></script>
+</body>
+
+</html>

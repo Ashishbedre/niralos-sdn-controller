@@ -1,0 +1,25 @@
+---
+db_uri: "mongodb://niralos-mongo/niralos"
+sbi:
+  server:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/udr.key"
+    cert: "/niral_config/tls/udr.crt"
+  client:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/udr.key"
+    cert: "/niral_config/tls/udr.crt"
+udr:
+  sbi:
+    dev: "eth0"
+    port: 7777
+  metrics: null
+scp:
+  sbi:
+  - name: "niralos-scp"
+    port: 7777
+parameter: null
+max: null
+time: null

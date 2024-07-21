@@ -202,7 +202,7 @@ public class VmManagementServiceImpl implements VmMangementService{
 	}
 
 	@Override
-//	@Scheduled(fixedRateString = "${edge.delete.time}")
+	@Scheduled(fixedRateString = "${edge.delete.time}")
 	public void checkDeletedVm() {
 		
         try {

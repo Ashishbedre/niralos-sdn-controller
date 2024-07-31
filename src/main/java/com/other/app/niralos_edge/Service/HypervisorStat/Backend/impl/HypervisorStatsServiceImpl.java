@@ -356,7 +356,8 @@ public class HypervisorStatsServiceImpl implements HypervisorStatsService {
 			hypervisorStatsModellss.setUsedDiskSpace(hypervisorStatsModel.getUsedDiskSpace());
 			hypervisorStatsModellss.setFreeDiskSpace(hypervisorStatsModel.getFreeDiskSpace());
 			hypervisorStatsModellss.setDiskPercentage(Double.parseDouble(df.format((Double.parseDouble(""+hypervisorStatsModel.getUsedDiskSpace()+"")/Double.parseDouble(""+hypervisorStatsModel.getTotalDiskspace()+""))*100D)));
-			hypervisorStatsModellss.setTotalRamSpace(hypervisorStatsModel.getTotalRamSpace());
+			//Ashish
+			hypervisorStatsModellss.setTotalRamSpace(Double.parseDouble(String.format("%.2f", hypervisorStatsModel.getTotalRamSpace())));
 			hypervisorStatsModellss.setCurrentRamUsage(hypervisorStatsModel.getCurrentRamUsage());
 			hypervisorStatsModellss.setAvailableRamSpace(hypervisorStatsModel.getAvailableRamSpace());
 			hypervisorStatsModellss.setRamPercentage(Double.parseDouble(df.format((Double.parseDouble(""+hypervisorStatsModel.getCurrentRamUsage()+"")/Double.parseDouble(""+hypervisorStatsModel.getTotalRamSpace()+""))*100D)));
@@ -371,9 +372,19 @@ public class HypervisorStatsServiceImpl implements HypervisorStatsService {
 			hypervisorStatsModellss.setNodeStatus(hypervisorStatsModel.getNodeStatus());
 			
 			List<CpuGraphModel> list=cpuGraphRepository.getGraphValue(edgeClientId);
-               
+			for (CpuGraphModel model : list) {
+				Double originalCpuValue = model.getCpuValue();
+				Double modifiedCpuValue = Double.parseDouble(String.format("%.2f", originalCpuValue)); // Round to 2 decimal places
+				model.setCpuValue(modifiedCpuValue);
+			}
 			hypervisorStatsModellss.setCpuGraphModel(list);
+
 			List<MemoryGraphModel> list1=memoryGraphRepository.getGraphValue(edgeClientId);
+			for (MemoryGraphModel model : list1) {
+				Double originalCpuValue = model.getMemoryValue();
+				Double modifiedCpuValue = Double.parseDouble(String.format("%.2f", originalCpuValue)); // Round to 2 decimal places
+				model.setMemoryValue(modifiedCpuValue);
+			}
 			
 			hypervisorStatsModellss.setMemoryGraphModel(list1);
 			hypervisorStatsDto.add(hypervisorStatsModellss);

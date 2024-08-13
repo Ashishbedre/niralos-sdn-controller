@@ -172,9 +172,12 @@ public class EdgeController {
 		VmCreationStatusDto Status = null;
 		try {
 			
-			createService.createVm(config);
-			System.out.println("VM Provisioning Initiated");
-				 
+			boolean isSuccess = createService.createVm(config);
+			if(isSuccess==false){
+				System.out.println("Error Occurred While Provisioning VM");
+				VmCreationStatusDto failStats = new VmCreationStatusDto(config.getVmid(), false);
+				return failStats;
+			}
 				
 		} catch (Exception e) {
 				
@@ -182,7 +185,9 @@ public class EdgeController {
 			VmCreationStatusDto failStats = new VmCreationStatusDto(config.getVmid(), false);
 			return failStats;
 		}
-		return Status;
+		VmCreationStatusDto successStats = new VmCreationStatusDto(config.getVmid(), true);
+		System.out.println("VM Provisioning Initiated");
+		return successStats;
 	}
 		
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

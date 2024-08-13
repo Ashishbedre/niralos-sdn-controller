@@ -41,8 +41,8 @@ public class VmCreationImpl implements VmCreation{
 	
 	
 	@Override
-	public void createVm(CreateVmConfigDto payload) {
-		
+	public boolean createVm(CreateVmConfigDto payload) {
+		boolean isSuccess = false;
 		try {
 	    	InternalDataModels temp=internalDataRepository.getData(payload.getEdgeClientId());
 	    	
@@ -131,17 +131,18 @@ public class VmCreationImpl implements VmCreation{
 				        .retrieve()
 				        .bodyToMono(String.class)
 				        .block();
-		  				
+						isSuccess = true; // Set isSuccess to true if the VM creation is successful
+
 					} catch (Exception e) {
-						
+						isSuccess = false;
 						logger.error("Unable to create vm in hypervisor"+e);
 					}
 					
 	  								
 					VmProvisionStatus updateProvisionStatus = new VmProvisionStatus(payload.getVmid(), true);
-					
+
                     logger.info("New VM Created Successfully");
-					
+
 					 WebClient.Builder webClientBuilder = WebClient.builder()
 				                .baseUrl("https://"+temp.getHypervisorIp()+":"+temp.getHypervisorPort())
 				                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
@@ -153,8 +154,8 @@ public class VmCreationImpl implements VmCreation{
 				        WebClient webClient = webClientBuilder.build();
 				        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
 				        for (AddInterfaceDto Interface : payload.getInterfaces()) {
-							
-						
+
+
 				        String bridge = "virtio,bridge=" + Interface.getSubnet();
 				        switch (Interface.getFirewall()) {
 				            case 0:
@@ -180,17 +181,18 @@ public class VmCreationImpl implements VmCreation{
 				                	logger.debug(""+response);
 				                });
 				        }
-				} 
+				}
 				catch (Exception e) {
 						VmProvisionStatus updateProvisionStatus = new VmProvisionStatus(payload.getVmid(), false);
+						isSuccess = false;
 					}
-					
-				}     		
+
+				}
 		} catch (Exception e) {
-			
+
 			logger.error("Error Ocurred While Provisioning VM"+e);
 		}
-		
+		return  isSuccess;
 	}
 
 }

@@ -429,7 +429,7 @@ public class JsonDumpServiceImpl implements JsonDumpService {
 	String alertManagerServicePort = "8098";
 	String fivegCoreServicePort = "8088";
 
-	@Scheduled(fixedRate = 3000)
+//	@Scheduled(fixedRate = 3000)
 	@Override
 	public void JsonDump() {
 

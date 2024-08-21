@@ -2,29 +2,21 @@ package com.other.app.niralos_edge.Service.ProxmoxContainerService.ProxmoxContai
 
 
 
-import com.other.app.niralos_edge.Model.InternalDataModels;
-import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
 import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeAuthService;
-import com.other.app.niralos_edge.dto.ContainerStatus;
 import com.other.app.niralos_edge.dto.TokenDetails;
+import com.other.app.niralos_edge.dto.container.Containerdto;
+import com.other.app.niralos_edge.dto.container.StatusContainer;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.logging.AdvancedByteBufFormat;
-
 import javax.net.ssl.SSLException;
-import java.time.Duration;
 import java.util.Map;
 
 @Service
@@ -36,195 +28,131 @@ public class ProxmoxContainerIMP {
     @Autowired
     private EdgeAuthService edgeAuthService;
 
-    @Autowired
-    InternalDataRepositorys internalDataRepository;
-
     @Value("${proxmox.api.url}")
     private String apiUrl;
-//    private static final Logger logger = LoggerFactory.getLogger(ProxmoxContainerIMP.class);
 
-    public ResponseEntity<String> createContainer(Map<String, Object> containerConfig,String edgeClientId) throws SSLException {
+    public ResponseEntity<Containerdto> createContainer(Map<String, Object> containerConfig,String edgeClientId) throws SSLException {
         TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken = tokenData.getCsrfToken();
 
-        if (ticket == null || csrfToken == null) {
-            return new ResponseEntity<String>("Authentication tokens are not available.", HttpStatus.NOT_ACCEPTABLE);
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            return new ResponseEntity<>(new Containerdto("Authentication tokens are not available."), HttpStatus.NOT_ACCEPTABLE);
         }
-//        SslContext sslContext = SslContextBuilder.forClient()
-//                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-//                .build();
-//
-//        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-//
-//        this.webClient = WebClient.builder()
-//                .clientConnector(new ReactorClientHttpConnector(httpClient))
-//                .baseUrl(apiUrl)
-//                .build();
+
+        ResponseEntity<Containerdto> containerdto;
+        try {
+            containerdto = createWebClient().post()
+                    .uri("/nodes/pve/lxc")
+                    .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                    .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                    .bodyValue(containerConfig)
+                    .retrieve()
+                    .toEntity(Containerdto.class)
+                    .block();
+        }catch (Exception e) {
+            String errorMessage = "An unexpected error occurred: " + e.getMessage();
+            Containerdto errorContainerDTO = new Containerdto(errorMessage); // Populate this with error info if needed
+            return new ResponseEntity<>(errorContainerDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return containerdto;
+
+    }
+
+    public ResponseEntity<Containerdto> startContainer( String edgeClientId,String vmid) throws SSLException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+        if (!areTokensValid(tokenData.getTicket(), tokenData.getCsrfToken())) {
+            return new ResponseEntity<>(new Containerdto("Authentication tokens are not available."), HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        try {
+            return createWebClient().post()
+                    .uri("/nodes/pve/lxc/{vmid}/status/start", vmid)
+                    .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                    .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                    .header("Content-Length", "0")
+                    .retrieve()
+                    .toEntity(Containerdto.class)
+                    .block();
+        } catch (Exception e) {
+            String errorMessage = "An unexpected error occurred: " + e.getMessage();
+            Containerdto errorContainerDTO = new Containerdto(errorMessage); // Populate this with error info if needed
+            return new ResponseEntity<>(errorContainerDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
 
 
-        return createWebClient().post()
-                .uri("/nodes/pve/lxc")
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
-                .bodyValue(containerConfig)
+
+    public ResponseEntity<Containerdto> stopContainer(String vmid ,String edgeClientId) throws SSLException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+        if (!areTokensValid(tokenData.getTicket(), tokenData.getCsrfToken())) {
+            return new ResponseEntity<>(new Containerdto("Authentication tokens are not available."), HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        try {
+            return createWebClient().post()
+                    .uri("/nodes/pve/lxc/{vmid}/status/stop", vmid)
+                    .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                    .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                    .header("Content-Length", "0")
+                    .retrieve()
+                    .toEntity(Containerdto.class)
+                    .block();
+        } catch (Exception e) {
+            String errorMessage = "An unexpected error occurred: " + e.getMessage();
+            Containerdto errorContainerDTO = new Containerdto(errorMessage); // Populate this with error info if needed
+            return new ResponseEntity<>(errorContainerDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<Containerdto> deleteContainer( String vmid ,String edgeClientId) throws SSLException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            return new ResponseEntity<>(new Containerdto("Authentication tokens are not available."), HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        try{
+            return createWebClient().delete()
+                    .uri("/nodes/pve/lxc/{vmid}",vmid)
+                    .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                    .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                    .header("Content-Length", "0")
+                    .retrieve()
+                    .toEntity(Containerdto.class)
+                    .block();
+        } catch (Exception e) {
+                String errorMessage = "An unexpected error occurred: " + e.getMessage();
+                Containerdto errorContainerDTO = new Containerdto(errorMessage); // Populate this with error info if needed
+                return new ResponseEntity<>(errorContainerDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<StatusContainer> getContainerStatus( String vmid ,String edgeClientId) throws SSLException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            StatusContainer statusContainer = new StatusContainer();
+            statusContainer.setData(null);
+            return new ResponseEntity<>(statusContainer, HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        return createWebClient().get()
+                .uri("/nodes/pve/lxc/{vmid}/status/current",vmid)
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                .header("Content-Length", "0")
                 .retrieve()
-                .toEntity(String.class)
+                .toEntity(StatusContainer.class)
                 .block();
     }
 
-    public Mono<ResponseEntity<String>> startContainer( String edgeClientId,String vmid) throws SSLException {
-
-        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken = tokenData.getCsrfToken();
-
+    private boolean areTokensValid(String ticket, String csrfToken){
         if (ticket == null || csrfToken == null) {
-            return Mono.just(new ResponseEntity<>("Authentication tokens are not available.", HttpStatus.NOT_ACCEPTABLE));
+            return false;
         }
-//        SslContext sslContext = SslContextBuilder.forClient()
-//                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-//                .build();
-//
-//        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-//
-//        this.webClient = WebClient.builder()
-//                .clientConnector(new ReactorClientHttpConnector(httpClient))
-//                .baseUrl(apiUrl)
-//                .build();
-
-
-        return webClient.post()
-                .uri("/nodes/pve/lxc/{vmid}/start",vmid)
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
-                .header("Content-Length", "0")
-                .retrieve()
-                .toEntity(String.class);
-
-
-//        return webClient.post()
-//                .uri("/nodes/pve/lxc/127/status/start")
-//                .header("Cookie", "PVEAuthCookie=" + ticket)
-//                .header("CSRFPreventionToken", csrfToken)
-//                .header("Content-Length", "0")
-//                .retrieve()
-//                .toEntity(String.class);
-//                .block();
-
-    }
-
-
-
-    public Mono<ResponseEntity<String>> stopContainer(String vmid ,String edgeClientId) throws SSLException {
-        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken = tokenData.getCsrfToken();
-
-        if (ticket == null || csrfToken == null) {
-            return Mono.just(new ResponseEntity<>("Authentication tokens are not available.", HttpStatus.NOT_ACCEPTABLE));
-        }
-        SslContext sslContext = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
-
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        this.webClient = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
-                .build();
-
-
-        return webClient.post()
-                .uri("/nodes/pve/lxc/{vmid}/stop",vmid)
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
-                .header("Content-Length", "0")
-                .retrieve()
-                .toEntity(String.class);
-
-//        return webClient.post()
-//                .uri("/nodes/{node}/lxc/{vmid}/status/stop", vmid)
-//                .header("CSRFPreventionToken", csrfToken)
-//                .cookie("PVEAuthCookie",ticket)
-//                .retrieve()
-//                .toEntity(String.class)
-//                .block();
-    }
-
-    public Mono<ResponseEntity<String>> deleteContainer( String vmid ,String edgeClientId) throws SSLException {
-        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken = tokenData.getCsrfToken();
-
-        if (ticket == null || csrfToken == null) {
-            return Mono.just(new ResponseEntity<>("Authentication tokens are not available.", HttpStatus.NOT_ACCEPTABLE));
-        }
-        SslContext sslContext = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
-
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        this.webClient = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
-                .build();
-
-
-        return webClient.post()
-                .uri("/nodes/{node}/lxc/{vmid}",vmid)
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
-                .header("Content-Length", "0")
-                .retrieve()
-                .toEntity(String.class);
-
-//        return webClient.delete()
-//                .uri("/nodes/{node}/lxc/{vmid}", node, vmid)
-//                .header("CSRFPreventionToken", csrfToken)
-//                .cookie("PVEAuthCookie",ticket)
-//                .retrieve()
-//                .toEntity(String.class)
-//                .block();
-    }
-
-    public Mono<ResponseEntity<String>> getContainerStatus( String vmid ,String edgeClientId) throws SSLException {
-        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken = tokenData.getCsrfToken();
-
-        if (ticket == null || csrfToken == null) {
-            return Mono.just(new ResponseEntity<>("Authentication tokens are not available.", HttpStatus.NOT_ACCEPTABLE));
-        }
-        SslContext sslContext = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
-
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        this.webClient = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
-                .build();
-
-
-        return webClient.post()
-                .uri("/nodes/{node}/lxc/{vmid}/status/current",vmid)
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
-                .header("Content-Length", "0")
-                .retrieve()
-                .toEntity(String.class);
-
-//        return webClient.get()
-//                .uri("/nodes/{node}/lxc/{vmid}/status/current", node, vmid)
-//                .header("CSRFPreventionToken", csrfToken)
-//                .cookie("PVEAuthCookie",ticket)
-//                .retrieve()
-//                .toEntity(String.class)
-//                .block();
+        return true;
     }
 
 
@@ -240,25 +168,5 @@ public class ProxmoxContainerIMP {
                 .baseUrl(apiUrl)
                 .build();
     }
-
-//    public  TokenDetails tokenDetails(String edgeClientId) throws SSLException {
-//        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-//        String ticket = tokenData.getTicket();
-//        String csrfToken = tokenData.getCsrfToken();
-//
-//        if (ticket == null || csrfToken == null) {
-//            return Mono.just(new ResponseEntity<>("Authentication tokens are not available.", HttpStatus.NOT_ACCEPTABLE));
-//        }
-//        SslContext sslContext = SslContextBuilder.forClient()
-//                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-//                .build();
-//
-//        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-//
-//        this.webClient = WebClient.builder()
-//                .clientConnector(new ReactorClientHttpConnector(httpClient))
-//                .baseUrl(apiUrl)
-//                .build();
-//    }
 
 }

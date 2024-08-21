@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -61,4 +62,21 @@ public class EdgeVmHardwareController {
             throw new RuntimeException(e);
         }
     }
+
+    @GetMapping("/nodes/{node}/qemu/{vmid}/config/edge_client_id={edgeClientId}")
+    public String  getVmOSTypes(
+            @PathVariable String node,
+            @PathVariable String vmid,
+            @PathVariable String edgeClientId) throws SSLException {
+        return edgeVMHardwaraServiceImpl.getVmOSTypes(node, vmid, edgeClientId);
+    }
+
+    @GetMapping("nodes/{node}/capabilities/qemu/machines/edge_client_id={edgeClientId}")
+    public String  getVmMachineTypes(
+            @PathVariable String node,
+            @PathVariable String edgeClientId) throws SSLException {
+        return edgeVMHardwaraServiceImpl.getVmMachineTypes(node, edgeClientId);
+    }
+
+
 }

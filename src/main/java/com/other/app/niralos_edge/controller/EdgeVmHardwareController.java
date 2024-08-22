@@ -3,13 +3,14 @@ package com.other.app.niralos_edge.controller;
 //import com.other.app.niralos_edge.dto.VMUpdateRequest;
 import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeVMHardwaraServiceImpl;
 import com.other.app.niralos_edge.dto.StorageResponse;
+import com.other.app.niralos_edge.dto.container.CpuModelsResponseDTO;
+import com.other.app.niralos_edge.dto.container.MachineTypeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -50,31 +51,23 @@ public class EdgeVmHardwareController {
     }
 
     @DeleteMapping("/removeVmHardware/vm_id={vmId}/edge_client_id={edgeClientId}/delete_Command={deleteCommand}")
-    public Mono<String> updateVmHardware(
-            @PathVariable String vmId,
-            @PathVariable String edgeClientId,
-            @PathVariable String deleteCommand) {
+    public Mono<String> removeVmHardware(@PathVariable String vmId, @PathVariable String edgeClientId, @PathVariable String deleteCommand) {
 //        String deleteCommand = body.replace("delete:", "").trim();
-
         try {
-            return edgeVMHardwaraServiceImpl.updateVmHardware(vmId,edgeClientId, deleteCommand);
+            return edgeVMHardwaraServiceImpl.removeVmHardware(vmId,edgeClientId, deleteCommand);
         } catch (SSLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @GetMapping("/nodes/{node}/qemu/{vmid}/config/edge_client_id={edgeClientId}")
-    public String  getVmOSTypes(
-            @PathVariable String node,
-            @PathVariable String vmid,
+    public ResponseEntity<CpuModelsResponseDTO> getVmOSTypes(@PathVariable String node, @PathVariable String vmid,
             @PathVariable String edgeClientId) throws SSLException {
         return edgeVMHardwaraServiceImpl.getVmOSTypes(node, vmid, edgeClientId);
     }
 
     @GetMapping("nodes/{node}/capabilities/qemu/machines/edge_client_id={edgeClientId}")
-    public String  getVmMachineTypes(
-            @PathVariable String node,
-            @PathVariable String edgeClientId) throws SSLException {
+    public ResponseEntity<MachineTypeResponse> getVmMachineTypes(@PathVariable String node, @PathVariable String edgeClientId) throws SSLException {
         return edgeVMHardwaraServiceImpl.getVmMachineTypes(node, edgeClientId);
     }
 

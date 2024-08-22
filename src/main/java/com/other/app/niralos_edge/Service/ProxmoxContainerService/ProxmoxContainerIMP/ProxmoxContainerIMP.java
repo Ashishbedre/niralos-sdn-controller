@@ -3,6 +3,7 @@ package com.other.app.niralos_edge.Service.ProxmoxContainerService.ProxmoxContai
 
 
 import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeAuthService;
+import com.other.app.niralos_edge.Service.ProxmoxContainerService.ProxmoxContainer;
 import com.other.app.niralos_edge.dto.TokenDetails;
 import com.other.app.niralos_edge.dto.container.Containerdto;
 import com.other.app.niralos_edge.dto.container.StatusContainer;
@@ -20,7 +21,7 @@ import javax.net.ssl.SSLException;
 import java.util.Map;
 
 @Service
-public class ProxmoxContainerIMP {
+public class ProxmoxContainerIMP implements ProxmoxContainer {
 
 
     private  WebClient webClient;

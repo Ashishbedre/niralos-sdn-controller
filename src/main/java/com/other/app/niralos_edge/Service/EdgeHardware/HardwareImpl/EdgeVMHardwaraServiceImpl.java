@@ -1,18 +1,18 @@
 package com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
 import com.other.app.niralos_edge.Service.EdgeHardware.EdgeVMHardwaraService;
-import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeAuthService;
-//import com.other.app.niralos_edge.dto.VMUpdateRequest;
 import com.other.app.niralos_edge.dto.StorageData;
 import com.other.app.niralos_edge.dto.StorageResponse;
 import com.other.app.niralos_edge.dto.TokenDetails;
+import com.other.app.niralos_edge.dto.container.CpuModelsResponseDTO;
+import com.other.app.niralos_edge.dto.container.MachineTypeResponse;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,6 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,81 +40,50 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
     private WebClient webClient;
 
     public Mono<String> getVmConfig(String nodeName, String vmId,String edgeClientId) throws SSLException {
-        TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken =  tokenData.getCsrfToken();
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-        if (ticket == null || csrfToken == null) {
-            return Mono.error(new RuntimeException("Authentication tokens are not available."));
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            return Mono.just("Authentication tokens are not available.");
         }
-        SslContext sslContext = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
 
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        this.webClient = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .build();
-
-        return webClient.get()
+        return createWebClient().get()
                 .uri(apiUrl + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
                 .bodyToMono(String.class);
     }
 
     public Mono<Void> updateVMConfig( Map<String, Object> request,Long vmId,String edgeClientId) throws SSLException {
-        TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken =  tokenData.getCsrfToken();
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-        if (ticket == null || csrfToken == null) {
-            return Mono.error(new RuntimeException("Authentication tokens are not available."));
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {;
+            return Mono.error(new RuntimeException("Invalid tokens"));
         }
-        SslContext sslContext = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
 
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        this.webClient = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
-                .build();
-
-        return webClient.put()
+        return createWebClient().put()
                 .uri("/nodes/pve/qemu/"+vmId+"/config")
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(Void.class);
+
     }
+
     public ResponseEntity<StorageResponse>  getStorageData(String edgeClientId) throws SSLException {
-        TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken =  tokenData.getCsrfToken();
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-        if (ticket == null || csrfToken == null) {
-            throw new RuntimeException("Authentication tokens are not available.");
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            StorageResponse storageResponse = new StorageResponse();
+            storageResponse.setData(null);
+            return new ResponseEntity<>(storageResponse ,HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        SslContext sslContext = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
 
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        this.webClient = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
-                .build();
-
-        StorageResponse response = webClient.get()
+        StorageResponse response = createWebClient().get()
                 .uri("/nodes/pve/storage")
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
                 .bodyToMono(StorageResponse.class)
                 .block(); // Blocking for simplicity, consider using reactive programming in a real application
@@ -130,7 +98,7 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
         return ResponseEntity.ok(response);
     }
 
-    public Mono<String> updateVmHardware(String vmId, String edgeClientId,String diskId) throws SSLException {
+    public Mono<String> removeVmHardware(String vmId, String edgeClientId,String diskId) throws SSLException {
         String url = apiUrl + "/nodes/pve/qemu/" + vmId + "/config";
         TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
         String ticket = tokenData.getTicket();
@@ -165,67 +133,69 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
 
 
 
-    public String  getVmOSTypes(String node, String vmId, String edgeClientId) throws SSLException {
-        TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken =  tokenData.getCsrfToken();
+    public ResponseEntity<CpuModelsResponseDTO>  getVmOSTypes(String node, String vmId, String edgeClientId) throws SSLException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-        if (ticket == null || csrfToken == null) {
-            throw new RuntimeException("Authentication tokens are not available.");
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            CpuModelsResponseDTO cpuModelsResponseDTO = new CpuModelsResponseDTO();
+            cpuModelsResponseDTO.setData(null);
+            return new ResponseEntity<>(cpuModelsResponseDTO ,HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        SslContext sslContext = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
 
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        this.webClient = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
-                .build();
-
-        return webClient.get()
+        CpuModelsResponseDTO cpuModelsResponseDTO =  createWebClient().get()
                 .uri("/nodes/pve/capabilities/qemu/cpu")
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
-                .bodyToMono(String.class)
+                .bodyToMono(CpuModelsResponseDTO.class)
                 .block();
 
 
-//        return ResponseEntity.ok(response);
+        return new ResponseEntity<>(cpuModelsResponseDTO,HttpStatus.OK);
     }
 
 
 
-    public String  getVmMachineTypes(String node, String edgeClientId) throws SSLException {
-        TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
-        String ticket = tokenData.getTicket();
-        String csrfToken =  tokenData.getCsrfToken();
+    public ResponseEntity<MachineTypeResponse>  getVmMachineTypes(String node, String edgeClientId) throws SSLException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-        if (ticket == null || csrfToken == null) {
-            throw new RuntimeException("Authentication tokens are not available.");
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            MachineTypeResponse machineTypeResponse = new MachineTypeResponse();
+            machineTypeResponse.setData(null);
+            return new ResponseEntity<>(machineTypeResponse ,HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        MachineTypeResponse machineTypeResponse =  createWebClient().get()
+                .uri("/nodes/pve/capabilities/qemu/machines")
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                .retrieve()
+                .bodyToMono(MachineTypeResponse.class)
+                .block();
+
+
+        return new ResponseEntity<>(machineTypeResponse,HttpStatus.OK);
+    }
+
+    private boolean areTokensValid(String ticket, String csrfToken){
+        if (ticket == null || csrfToken == null) {
+            return false;
+        }
+        return true;
+    }
+
+
+    private WebClient createWebClient() throws SSLException {
         SslContext sslContext = SslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .build();
 
         HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
 
-        this.webClient = WebClient.builder()
+        return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .baseUrl(apiUrl)
                 .build();
-
-        return webClient.get()
-                .uri("/nodes/pve/capabilities/qemu/machines")
-                .header("Cookie", "PVEAuthCookie=" + ticket)
-                .header("CSRFPreventionToken", csrfToken)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-
-//        return ResponseEntity.ok(response);
     }
+
 }

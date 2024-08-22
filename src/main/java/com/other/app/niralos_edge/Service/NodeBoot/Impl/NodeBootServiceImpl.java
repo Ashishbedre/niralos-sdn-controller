@@ -69,7 +69,7 @@ public class NodeBootServiceImpl implements NodeBootInterface{
 			                .subscribe(responseBody -> {
 			                	logger.debug(responseBody + "vm boot on progress");
 			                }, throwable -> {
-			                	logger.error("Error: " + throwable.getMessage() + " 'node Needs Reboot' ");
+			                	logger.error("Error :" + throwable.getMessage() + " 'node Needs Reboot' ");
 			                });
 			}catch (Exception e) {
 				

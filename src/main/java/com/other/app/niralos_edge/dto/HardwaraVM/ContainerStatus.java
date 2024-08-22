@@ -1,4 +1,4 @@
-package com.other.app.niralos_edge.dto;
+package com.other.app.niralos_edge.dto.HardwaraVM;
 
 public class ContainerStatus {
     private String status;

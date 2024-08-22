@@ -2,9 +2,9 @@ package com.other.app.niralos_edge.controller;
 
 //import com.other.app.niralos_edge.dto.VMUpdateRequest;
 import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeVMHardwaraServiceImpl;
-import com.other.app.niralos_edge.dto.StorageResponse;
-import com.other.app.niralos_edge.dto.container.CpuModelsResponseDTO;
-import com.other.app.niralos_edge.dto.container.MachineTypeResponse;
+import com.other.app.niralos_edge.dto.HardwaraVM.StorageResponse;
+import com.other.app.niralos_edge.dto.HardwaraVM.CpuModelsResponseDTO;
+import com.other.app.niralos_edge.dto.HardwaraVM.MachineTypeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

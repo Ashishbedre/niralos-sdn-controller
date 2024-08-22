@@ -2,11 +2,11 @@ package com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl;
 
 import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
 import com.other.app.niralos_edge.Service.EdgeHardware.EdgeVMHardwaraService;
-import com.other.app.niralos_edge.dto.StorageData;
-import com.other.app.niralos_edge.dto.StorageResponse;
-import com.other.app.niralos_edge.dto.TokenDetails;
-import com.other.app.niralos_edge.dto.container.CpuModelsResponseDTO;
-import com.other.app.niralos_edge.dto.container.MachineTypeResponse;
+import com.other.app.niralos_edge.dto.HardwaraVM.StorageData;
+import com.other.app.niralos_edge.dto.HardwaraVM.StorageResponse;
+import com.other.app.niralos_edge.dto.HardwaraVM.TokenDetails;
+import com.other.app.niralos_edge.dto.HardwaraVM.CpuModelsResponseDTO;
+import com.other.app.niralos_edge.dto.HardwaraVM.MachineTypeResponse;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;

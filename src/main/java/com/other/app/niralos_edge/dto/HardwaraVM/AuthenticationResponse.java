@@ -1,8 +1,5 @@
-package com.other.app.niralos_edge.dto;
+package com.other.app.niralos_edge.dto.HardwaraVM;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AuthenticationResponse {
 

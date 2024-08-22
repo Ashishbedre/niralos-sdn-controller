@@ -1,4 +1,4 @@
-package com.other.app.niralos_edge.dto.container;
+package com.other.app.niralos_edge.dto.HardwaraVM;
 
 public class MachineTypeDTO {
 

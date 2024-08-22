@@ -1,4 +1,4 @@
-package com.other.app.niralos_edge.dto;
+package com.other.app.niralos_edge.dto.HardwaraVM;
 
 import com.other.app.niralos_edge.dto.HardwaraVM.StorageData;
 

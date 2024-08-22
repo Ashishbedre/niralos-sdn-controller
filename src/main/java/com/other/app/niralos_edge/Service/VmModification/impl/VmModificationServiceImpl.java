@@ -83,7 +83,7 @@ public class VmModificationServiceImpl implements VmModificationService{
 			 .timeout(Duration.ofSeconds(1));
 			 
 			 responseMono.subscribe(responseBody -> {
-				    System.out.println(responseBody);
+//				 logger.info(responseBody);
 				    synchronized (lock) {
 				        lock.notify();
 				    }
@@ -104,8 +104,8 @@ public class VmModificationServiceImpl implements VmModificationService{
 	     String csrfToken = (String) data.get("CSRFPreventionToken");
 	     ProxmoxToken proxmoxToken = new ProxmoxToken(ticket,csrfToken);
 			
-	        System.out.println( proxmoxToken.getTicket() );
-	        System.out.println( proxmoxToken.getCSRFPreventionToken() );
+	     logger.info( proxmoxToken.getTicket() );
+	     logger.info( proxmoxToken.getCSRFPreventionToken() );
 
 	        
 	    	SslContext sslContext;
@@ -257,8 +257,8 @@ public class VmModificationServiceImpl implements VmModificationService{
 		     String csrfToken = (String) data.get("CSRFPreventionToken");
 		     ProxmoxToken proxmoxToken = new ProxmoxToken(ticket,csrfToken);
 				
-		        System.out.println( proxmoxToken.getTicket() );
-		        System.out.println( proxmoxToken.getCSRFPreventionToken() );
+		     logger.info( proxmoxToken.getTicket() );
+		     logger.info( proxmoxToken.getCSRFPreventionToken() );
 
 		        
 		    	SslContext sslContext;

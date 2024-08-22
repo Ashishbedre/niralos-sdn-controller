@@ -1,5 +1,7 @@
 package com.other.app.niralos_edge.dto;
 
+import com.other.app.niralos_edge.dto.HardwaraVM.StorageData;
+
 import java.util.List;
 
 public class StorageResponse {

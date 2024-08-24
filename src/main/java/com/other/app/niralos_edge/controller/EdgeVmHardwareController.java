@@ -1,16 +1,16 @@
 package com.other.app.niralos_edge.controller;
 
 //import com.other.app.niralos_edge.dto.VMUpdateRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeVMHardwaraServiceImpl;
-import com.other.app.niralos_edge.dto.HardwaraVM.StorageResponse;
-import com.other.app.niralos_edge.dto.HardwaraVM.CpuModelsResponseDTO;
-import com.other.app.niralos_edge.dto.HardwaraVM.MachineTypeResponse;
+import com.other.app.niralos_edge.dto.HardwaraVM.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,13 +22,14 @@ public class EdgeVmHardwareController {
     EdgeVMHardwaraServiceImpl edgeVMHardwaraServiceImpl;
 
     @GetMapping("/config/{nodeName}/{vmId}/{edgeClientId}")
-    public Mono<String> getVmConfig(@PathVariable String nodeName, @PathVariable String vmId,@PathVariable String edgeClientId) {
+    public VmDataDTOResponce  getVmConfig(@PathVariable String nodeName, @PathVariable String vmId, @PathVariable String edgeClientId) {
         try {
             return edgeVMHardwaraServiceImpl.getVmConfig(nodeName, vmId,edgeClientId);
-        } catch (SSLException e) {
+        } catch (SSLException | JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
+
 
 
     @GetMapping("/storage/{edgeClientId}")
@@ -71,5 +72,10 @@ public class EdgeVmHardwareController {
         return edgeVMHardwaraServiceImpl.getVmMachineTypes(node, edgeClientId);
     }
 
+
+    @GetMapping("nodes/{node}/network/edge_client_id={edgeClientId}")
+    public List<Map<String, Object>> getNetwork(@PathVariable String node, @PathVariable String edgeClientId) throws SSLException, JsonProcessingException {
+        return edgeVMHardwaraServiceImpl.getNetwork(node, edgeClientId);
+    }
 
 }

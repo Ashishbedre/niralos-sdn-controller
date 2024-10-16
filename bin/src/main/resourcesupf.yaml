@@ -1,0 +1,20 @@
+---
+logger:
+  file_stat: "/niral_config/upf_stat.log"
+upf:
+  pfcp:
+    dev: "eth0"
+    port: 8805
+  metrics:
+    dev: "eth0"
+    port: 9090
+  gtpu:
+    dev: "eth0"
+    port: 2152
+  subnet:
+  - addr: "10.101.0.1/16"
+  - addr: "2001:db8:cafe::1/48"
+smf: null
+parameter: null
+max: null
+time: null

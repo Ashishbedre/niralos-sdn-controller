@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400&display=swap" rel="stylesheet" />
+
+	<link rel="stylesheet" href="fonts/icomoon/style.css" />
+
+	<link rel="stylesheet" href="css/owl.carousel.min.css" />
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="css/bootstrap.min.css" />
+
+	<!-- Style -->
+	<link rel="stylesheet" href="css/style.css" />
+
+	<title>Niral Controller Client</title>
+</head>
+
+<body>
+	<div class="content">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-6">
+					<img src="images/undraw_remotely_2j6y.svg" alt="Image" class="img-fluid" />
+				</div>
+				<div class="col-md-6 contents">
+					<div class="row justify-content-center">
+						<div class="col-md-8">
+							<div class="mb-4">
+								<h3>Dashboard</h3>
+								<p class="mb-4">Find all details about the device here.</p>
+							</div>
+							<div class="form-group last mb-4"><small id="niralControllerClientId"
+									class="form-text text-muted">Device ID</small> <a
+									th:text="${internalData.niralControllerClientId}"></a></div>
+							<div class="form-group last mb-4" th:if="${internalData.niralControllerIp != null}"><small
+									id="niralControllerIp" class="form-text text-muted">Niral Controller IP</small> <a
+									th:text="${internalData.niralControllerIp}"></a></div>
+							<div class="form-group last mb-4" th:if="${internalData.amfIp != null}"><small id="amfIp"
+									class="form-text text-muted">AMF IP</small> <a th:text="${internalData.amfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.amfPort != null}"><small
+									id="amfPort" class="form-text text-muted">AMF PORT</small> <a
+									th:text="${internalData.amfPort}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.smfIp != null}"><small id="smfIp"
+									class="form-text text-muted">SMF IP</small> <a th:text="${internalData.smfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.smfPort != null}"><small
+									id="smfPort" class="form-text text-muted">SMF PORT</small> <a
+									th:text="${internalData.smfPort}"></a>
+							</div>
+
+							<div class="form-group last mb-4" th:if="${internalData.nrfIp != null}"><small id="nrfIp"
+									class="form-text text-muted">NRF IP</small> <a th:text="${internalData.nrfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.nrfPort != null}"><small
+									id="nrfPort" class="form-text text-muted">NRF PORT</small> <a
+									th:text="${internalData.nrfPort}"></a>
+							</div>
+
+							<div class="form-group last mb-4" th:if="${internalData.upfIp != null}"><small id="upfIp"
+									class="form-text text-muted">UPF IP</small> <a th:text="${internalData.upfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.upfPort != null}"><small
+									id="upfPort" class="form-text text-muted">UPF PORT</small> <a
+									th:text="${internalData.upfPort}"></a>
+							</div>
+
+							<div class="form-group last mb-4" th:if="${internalData.udrIp != null}"><small id="udrIp"
+									class="form-text text-muted">UDR IP</small> <a th:text="${internalData.udrIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.udrPort != null}"><small
+									id="udrPort" class="form-text text-muted">UDR PORT</small> <a
+									th:text="${internalData.udrPort}"></a>
+							</div>
+
+							<div class="form-group last mb-4" th:if="${internalData.nssfIp != null}"><small id="nssfIp"
+									class="form-text text-muted">NSSF IP</small> <a
+									th:text="${internalData.nssfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.nssfPort != null}"><small
+									id="nssfPort" class="form-text text-muted">NSSF PORT</small> <a
+									th:text="${internalData.nssfPort}"></a>
+							</div>
+							
+								<div class="form-group last mb-4" th:if="${internalData.upgIp != null}"><small id="upgIp"
+									class="form-text text-muted">UPG IP</small> <a
+									th:text="${internalData.upgIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.upgPort != null}"><small
+									id="upgPort" class="form-text text-muted">UPG PORT</small> <a
+									th:text="${internalData.upgPort}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.tenantId != null}"><small
+									id="tenantId" class="form-text text-muted">TENANT NAME</small> <a
+									th:text="${internalData.tenantId}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.siteId != null}"><small
+									id="siteId" class="form-text text-muted">SITE NAME</small> <a
+									th:text="${internalData.siteId}"></a>
+							</div>
+								<div class="form-group last mb-4" th:if="${internalData.subzoneName != null}"><small
+									id="subzoneName" class="form-text text-muted">SUBZONE NAME</small> <a
+									th:text="${internalData.subzoneName}"></a>
+							</div>
+								<div class="form-group last mb-4" th:if="${internalData.zoneName != null}"><small
+									id="zoneName" class="form-text text-muted">ZONE NAME</small> <a
+									th:text="${internalData.zoneName}"></a>
+							</div>
+						
+							
+								<div class="form-group last mb-4" th:if="${internalData.ausfIp != null}"><small id="ausfIp"
+									class="form-text text-muted">AUSF IP</small> <a
+									th:text="${internalData.ausfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.ausfPort != null}"><small
+									id="ausfPort" class="form-text text-muted">AUSF PORT</small> <a
+									th:text="${internalData.ausfPort}"></a>
+							</div>
+							
+							
+								<div class="form-group last mb-4" th:if="${internalData.pcfIp != null}"><small id="pcfIp"
+									class="form-text text-muted">PCF IP</small> <a
+									th:text="${internalData.pcfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.pcfPort != null}"><small
+									id="pcfPort" class="form-text text-muted">PCF PORT</small> <a
+									th:text="${internalData.pcfPort}"></a>
+							</div>
+								
+							
+								<div class="form-group last mb-4" th:if="${internalData.udmIp != null}"><small id="udmIp"
+									class="form-text text-muted">UDM IP</small> <a
+									th:text="${internalData.udmIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.udmPort != null}"><small
+									id="udmPort" class="form-text text-muted">UDM PORT</small> <a
+									th:text="${internalData.udmPort}"></a>
+							</div>
+						
+							
+								<div class="form-group last mb-4" th:if="${internalData.scpIp != null}"><small id="scpIp"
+									class="form-text text-muted">SCP IP</small> <a
+									th:text="${internalData.scpIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.scpPort != null}"><small
+									id="scpPort" class="form-text text-muted">SCP PORT</small> <a
+									th:text="${internalData.scpPort}"></a>
+							</div>
+							
+						
+							
+							<div class="form-group last mb-4" th:if="${internalData.bsfIp != null}"><small id="bsfIp"
+									class="form-text text-muted">BSF IP</small> <a
+									th:text="${internalData.bsfIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.bsfPort != null}"><small
+									id="bsfPort" class="form-text text-muted">BSF PORT</small> <a
+									th:text="${internalData.bsfPort}"></a>
+							</div>
+							
+							
+							
+							
+							
+							<div class="form-group last mb-4" th:if="${internalData.hypervisorIp != null}"><small id="hypervisorIp"
+									class="form-text text-muted">hypervisor Ip</small> <a
+									th:text="${internalData.hypervisorIp}"></a>
+							</div>
+							<div class="form-group last mb-4" th:if="${internalData.hypervisorToken != null}"><small
+									id="hypervisorToken" class="form-text text-muted">hypervisor Token</small> <a
+									th:text="${internalData.hypervisorToken}"></a>
+							</div>
+							
+							
+							<div class="mt-4">
+								<a href="/settings"> <input value="Settings" class="btn btn-block btn-primary" /> </a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/main.js"></script>
+</body>
+
+</html>

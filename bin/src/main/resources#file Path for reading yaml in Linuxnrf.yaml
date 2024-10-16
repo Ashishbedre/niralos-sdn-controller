@@ -1,0 +1,26 @@
+---
+sbi:
+  server:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/nrf.key"
+    cert: "/niral_config/tls/nrf.crt"
+  client:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/nrf.key"
+    cert: "/niral_config/tls/nrf.crt"
+nrf:
+  sbi:
+    dev: "eth0"
+    port: 7777
+  metrics:
+    dev: "eth0"
+    port: 9090
+scp:
+  sbi:
+  - name: "niralos-scp"
+    port: 7777
+parameter: null
+max: null
+time: null

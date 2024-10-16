@@ -1,0 +1,48 @@
+---
+logger:
+  file_stat: "/niral_config/smf_stat_archive/smf_stat.log"
+sbi:
+  server:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/smf.key"
+    cert: "/niral_config/tls/smf.crt"
+  client:
+    no_tls: true
+    cacert: "/niral_config/tls/ca.crt"
+    key: "/niral_config/tls/smf.key"
+    cert: "/niral_config/tls/smf.crt"
+smf:
+  sbi:
+    dev: "eth0"
+    port: 7777
+  pfcp:
+    dev: "eth0"
+    port: 8805
+  gtpc:
+    dev: "eth0"
+  gtpu:
+    dev: "eth0"
+  metrics:
+    dev: "eth0"
+    port: 9090
+  subnet:
+  - addr: "10.101.0.1/16"
+  dns:
+  - "8.8.8.8"
+  - "8.8.4.4"
+  mtu: 1400
+  ctf:
+    enabled: "auto"
+  freeDiameter: "./install/etc/freeDiameter/smf.conf"
+scp:
+  sbi:
+  - name: "niralos-scp"
+    port: 7777
+upf:
+  pfcp:
+  - name: "niralos-upf"
+    port: 8805
+parameter: null
+max: null
+time: null

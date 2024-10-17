@@ -1,5 +1,6 @@
 package com.other.app.niralos_edge.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeVMHardwaraAddServiceImpl;
 import com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl.EdgeVMHardwaraServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ public class EdgeVmHardwareAddController {
     @Autowired
     EdgeVMHardwaraAddServiceImpl edgeVMHardwaraAddService;
 
-    @PutMapping("/addHardDisk/vm_id={vm_id}/id={id}/edge_client_id={edge_client_id}")
+    @PostMapping("/addHardDisk/vm_id={vm_id}/id={id}/edge_client_id={edge_client_id}")
     public Mono<Void> addHardDisk(@RequestBody Map<String, Object> request, @PathVariable("vm_id") Long vmId,
                                @PathVariable ("edge_client_id") String edgeClientId ,
                                   @PathVariable ("id") String id) {
@@ -29,7 +30,7 @@ public class EdgeVmHardwareAddController {
         }
     }
 
-    @PutMapping("/addCdOrDvd/vm_id={vm_id}/id={id}/edge_client_id={edge_client_id}")
+    @PostMapping("/addCdOrDvd/vm_id={vm_id}/id={id}/edge_client_id={edge_client_id}")
     public Mono<Void> addCdOrDvd(@RequestBody Map<String, Object> request, @PathVariable("vm_id") Long vmId,
                                @PathVariable ("edge_client_id") String edgeClientId,
                                  @PathVariable ("id") String id) {
@@ -40,13 +41,14 @@ public class EdgeVmHardwareAddController {
         }
     }
 
-    @PutMapping("/addNetworkDevice/vm_id={vm_id}/id={id}/edge_client_id={edge_client_id}")
+    @PostMapping("/addNetworkDevice/vm_id={vm_id}/edge_client_id={edge_client_id}")
     public Mono<Void> addNetworkDevice(@RequestBody Map<String, Object> request, @PathVariable("vm_id") Long vmId,
-                               @PathVariable ("edge_client_id") String edgeClientId,
-                                       @PathVariable ("id") String id) {
+                               @PathVariable ("edge_client_id") String edgeClientId) {
         try {
-            return edgeVMHardwaraAddService.addNetworkDevice(request,vmId,edgeClientId,id);
+            return edgeVMHardwaraAddService.addNetworkDevice(request,vmId,edgeClientId);
         } catch (SSLException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }

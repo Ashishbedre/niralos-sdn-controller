@@ -106,6 +106,33 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
         return ResponseEntity.ok(response);
     }
 
+    public ResponseEntity<StorageResponse>  getStorageDataLVM(String edgeClientId) throws SSLException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            StorageResponse storageResponse = new StorageResponse();
+            storageResponse.setData(null);
+            return new ResponseEntity<>(storageResponse ,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        StorageResponse response = createWebClient().get()
+                .uri("/nodes/pve/storage")
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                .retrieve()
+                .bodyToMono(StorageResponse.class)
+                .block(); // Blocking for simplicity, consider using reactive programming in a real application
+
+        // Filter the data as needed
+        List<StorageData> filteredData = response.getData().stream()
+                .filter(data -> "local-lvm".equals(data.getStorage())) // Filter ba // Example: filter out storages with used_fraction > 0.5
+                .collect(Collectors.toList());
+
+        response.setData(filteredData);
+
+        return ResponseEntity.ok(response);
+    }
+
     public Mono<String> removeVmHardware(String vmId, String edgeClientId,String diskId) throws SSLException {
         String url = apiUrl + "/nodes/pve/qemu/" + vmId + "/config";
         TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
@@ -238,24 +265,75 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
 
         Map<String, Object> hashMapResponce  = vmConfigDTOMono.block();
 
-        vmDataDTOResponce.setCores((int) hashMapResponce.get("cores"));
-        vmDataDTOResponce.setCpu((String) hashMapResponce.get("cpu"));
-        vmDataDTOResponce.setVmgenid((String) hashMapResponce.get("vmgenid"));
-        vmDataDTOResponce.setBoot((String) hashMapResponce.get("boot"));
-        vmDataDTOResponce.setArgs((String) hashMapResponce.get("args"));
-        vmDataDTOResponce.setAgent((String) hashMapResponce.get("agent"));
-        vmDataDTOResponce.setVga((String) hashMapResponce.get("vga"));
-        vmDataDTOResponce.setScsihw((String) hashMapResponce.get("scsihw"));
-        vmDataDTOResponce.setBalloon((int) hashMapResponce.get("balloon"));
-        vmDataDTOResponce.setMachine((String) hashMapResponce.get("machine"));
-        vmDataDTOResponce.setSockets((int) hashMapResponce.get("sockets"));
-        vmDataDTOResponce.setOstype((String) hashMapResponce.get("ostype"));
-        vmDataDTOResponce.setName((String) hashMapResponce.get("name"));
-        vmDataDTOResponce.setNuma((int) hashMapResponce.get("numa"));
-        vmDataDTOResponce.setBios((String) hashMapResponce.get("bios"));
-        vmDataDTOResponce.setOnboot((int) hashMapResponce.get("onboot"));
-        vmDataDTOResponce.setMemory((int) hashMapResponce.get("memory"));
+//        vmDataDTOResponce.setCores((int) hashMapResponce.get("cores"));
+//        vmDataDTOResponce.setCpu((String) hashMapResponce.get("cpu"));
+//        vmDataDTOResponce.setVmgenid((String) hashMapResponce.get("vmgenid"));
+//        vmDataDTOResponce.setBoot((String) hashMapResponce.get("boot"));
+//        vmDataDTOResponce.setArgs((String) hashMapResponce.get("args"));
+//        vmDataDTOResponce.setAgent((String) hashMapResponce.get("agent"));
+//        vmDataDTOResponce.setVga((String) hashMapResponce.get("vga"));
+//        vmDataDTOResponce.setScsihw((String) hashMapResponce.get("scsihw"));
+//        vmDataDTOResponce.setBalloon((int) hashMapResponce.getOrDefault("balloon", 0));
+//        vmDataDTOResponce.setMachine((String) hashMapResponce.get("machine"));
+//        vmDataDTOResponce.setSockets((int) hashMapResponce.get("sockets"));
+//        vmDataDTOResponce.setOstype((String) hashMapResponce.get("ostype"));
+//        vmDataDTOResponce.setName((String) hashMapResponce.get("name"));
+//        vmDataDTOResponce.setNuma((int) hashMapResponce.get("numa"));
+//        vmDataDTOResponce.setBios((String) hashMapResponce.get("bios"));
+//        vmDataDTOResponce.setOnboot((int) hashMapResponce.get("onboot"));
+//        vmDataDTOResponce.setMemory((int) hashMapResponce.get("memory"));
 
+        if (hashMapResponce.containsKey("cores")) {
+            vmDataDTOResponce.setCores((int) hashMapResponce.get("cores"));
+        }
+        if (hashMapResponce.containsKey("cpu")) {
+            vmDataDTOResponce.setCpu((String) hashMapResponce.get("cpu"));
+        }
+        if (hashMapResponce.containsKey("vmgenid")) {
+            vmDataDTOResponce.setVmgenid((String) hashMapResponce.get("vmgenid"));
+        }
+        if (hashMapResponce.containsKey("boot")) {
+            vmDataDTOResponce.setBoot((String) hashMapResponce.get("boot"));
+        }
+        if (hashMapResponce.containsKey("args")) {
+            vmDataDTOResponce.setArgs((String) hashMapResponce.get("args"));
+        }
+        if (hashMapResponce.containsKey("agent")) {
+            vmDataDTOResponce.setAgent((String) hashMapResponce.get("agent"));
+        }
+        if (hashMapResponce.containsKey("vga")) {
+            vmDataDTOResponce.setVga((String) hashMapResponce.get("vga"));
+        }
+        if (hashMapResponce.containsKey("scsihw")) {
+            vmDataDTOResponce.setScsihw((String) hashMapResponce.get("scsihw"));
+        }
+        if (hashMapResponce.containsKey("balloon")) {
+            vmDataDTOResponce.setBalloon((int) hashMapResponce.get("balloon"));
+        }
+        if (hashMapResponce.containsKey("machine")) {
+            vmDataDTOResponce.setMachine((String) hashMapResponce.get("machine"));
+        }
+        if (hashMapResponce.containsKey("sockets")) {
+            vmDataDTOResponce.setSockets((int) hashMapResponce.get("sockets"));
+        }
+        if (hashMapResponce.containsKey("ostype")) {
+            vmDataDTOResponce.setOstype((String) hashMapResponce.get("ostype"));
+        }
+        if (hashMapResponce.containsKey("name")) {
+            vmDataDTOResponce.setName((String) hashMapResponce.get("name"));
+        }
+        if (hashMapResponce.containsKey("numa")) {
+            vmDataDTOResponce.setNuma((int) hashMapResponce.get("numa"));
+        }
+        if (hashMapResponce.containsKey("bios")) {
+            vmDataDTOResponce.setBios((String) hashMapResponce.get("bios"));
+        }
+        if (hashMapResponce.containsKey("onboot")) {
+            vmDataDTOResponce.setOnboot((int) hashMapResponce.get("onboot"));
+        }
+        if (hashMapResponce.containsKey("memory")) {
+            vmDataDTOResponce.setMemory((int) hashMapResponce.get("memory"));
+        }
 
         // Initialize lists for network, cdAndDvd, and harddisk
         List<Map<String, String>> network = new ArrayList<>();

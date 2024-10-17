@@ -1,6 +1,7 @@
 package com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
 import com.other.app.niralos_edge.dto.HardwaraVM.TokenDetails;
 import io.netty.handler.ssl.SslContext;
@@ -27,6 +28,9 @@ public class EdgeVMHardwaraAddServiceImpl {
 
     @Autowired
     InternalDataRepositorys dataRepository;
+
+    @Autowired
+    EdgeVmHardwareListServiceImp edgeVmHardwareListServiceImp;
 
     @Value("${proxmox.api.url}")
     private String apiUrl;
@@ -100,7 +104,7 @@ public class EdgeVMHardwaraAddServiceImpl {
                 .bodyToMono(Void.class);
 
     }
-    public Mono<Void> addNetworkDevice(Map<String, Object> request, Long vmId, String edgeClientId, String id) throws SSLException {
+    public Mono<Void> addNetworkDevice(Map<String, Object> request, Long vmId, String edgeClientId) throws SSLException, JsonProcessingException {
         TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
         if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
@@ -123,7 +127,7 @@ public class EdgeVMHardwaraAddServiceImpl {
         //net1: virtio,bridge=vmbr0,firewall=1
 //        ide2: local:iso/ubuntu-22.04.4-desktop-amd64.iso,media=cdrom
         Map<String, String> requestBody = new HashMap<>();
-        requestBody.put(id, requestBodyString);
+        requestBody.put(edgeVmHardwareListServiceImp.getVmNet("pve",vmId,edgeClientId), requestBodyString);
         return createWebClient().put()
                 .uri("/nodes/pve/qemu/"+vmId+"/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())

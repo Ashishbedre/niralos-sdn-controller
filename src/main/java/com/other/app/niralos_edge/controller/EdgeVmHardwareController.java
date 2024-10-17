@@ -41,6 +41,15 @@ public class EdgeVmHardwareController {
         }
     }
 
+    @GetMapping("/StorageDataLVM/{edgeClientId}")
+    public ResponseEntity<StorageResponse> getStorageDataLVM(@PathVariable String edgeClientId) {
+        try {
+            return edgeVMHardwaraServiceImpl.getStorageDataLVM(edgeClientId);
+        } catch (SSLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @PutMapping("/updateVmHardware/vm_id={vm_id}/edge_client_id={edge_client_id}")
     public Mono<Void> updateVM(@RequestBody Map<String, Object> request, @PathVariable ("vm_id") Long vmId,
                                @PathVariable ("edge_client_id") String edgeClientId ) {

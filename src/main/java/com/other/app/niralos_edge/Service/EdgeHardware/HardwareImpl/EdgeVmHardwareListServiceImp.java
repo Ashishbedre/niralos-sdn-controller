@@ -64,6 +64,23 @@ public class EdgeVmHardwareListServiceImp {
         return edgeHelperService.extractNextIdeNumber(edgeHelperService.vmDataDTOResponce(vmConfigDTOMono));
     }
 
+    public String getVmNet(String nodeName, Long vmId,String edgeClientId) throws SSLException, JsonProcessingException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+
+        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient().get()
+                .uri(apiUrl + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> (Map<String, Object>) response.get("data"));
+
+        return edgeHelperService.extractNextnetNumber(edgeHelperService.vmDataDTOResponce(vmConfigDTOMono));
+    }
+
+
+
 
     private boolean areTokensValid(String ticket, String csrfToken){
         if (ticket == null || csrfToken == null) {

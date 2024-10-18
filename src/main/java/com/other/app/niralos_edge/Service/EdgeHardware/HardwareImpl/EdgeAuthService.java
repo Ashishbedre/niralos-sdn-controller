@@ -26,8 +26,8 @@ import java.util.Map;
 @EnableScheduling
 public class EdgeAuthService {
 
-    @Value("${proxmox.api.url}")
-    private String apiUrl;
+//    @Value("${proxmox.api.url}")
+//    private String apiUrl;
     private String storedTicket;
     private String storedCsrfToken;
 
@@ -49,27 +49,40 @@ public class EdgeAuthService {
     // Map to store the tokens and their expiration time for each VM by edgeClientId
     private final Map<String, TokenDetails> tokenStore = new HashMap<>();
 
-    @PostConstruct
-    public void init() throws SSLException {
+//    @PostConstruct
+//    public void init() throws SSLException {
+//        SslContext sslContext = SslContextBuilder.forClient()
+//                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+//                .build();
+//
+//        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+//
+//        this.webClient = WebClient.builder()
+//                .clientConnector(new ReactorClientHttpConnector(httpClient))
+//                .baseUrl(apiUrl)
+//                .build();
+//    }
+
+
+    private WebClient createWebClient(String baseUrl) throws SSLException {
         SslContext sslContext = SslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .build();
 
         HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
 
-        this.webClient = WebClient.builder()
+        return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
+                .baseUrl(baseUrl)
                 .build();
     }
 
 //    @Scheduled(fixedRate = 3600000) // 1 hour
-    public void authenticateAndStore(String edgeClientId) {
+    public void authenticateAndStore(String edgeClientId) throws SSLException {
         String url = "/access/ticket";
         InternalDataModels data =  dataRepository.getData(edgeClientId);
         Map<String, String> body = Map.of("username", data.getUserName(), "password", data.getPassword());
-
-        String responseBody = webClient.post()
+        String responseBody = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").post()
                 .uri(url)
                 .bodyValue(body)
                 .retrieve()
@@ -92,8 +105,8 @@ public class EdgeAuthService {
                     response.getData().getCsrfPreventionToken(),
                     expirationTime));
 
-//            storedCsrfToken = response.getData().getCsrfPreventionToken();
-//            storedTicket = response.getData().getTicket();
+            storedCsrfToken = response.getData().getCsrfPreventionToken();
+            storedTicket = response.getData().getTicket();
 //
             System.out.println("CSRFPreventionToken: " + storedCsrfToken);
             System.out.println("Ticket: " + storedTicket);
@@ -104,7 +117,7 @@ public class EdgeAuthService {
     }
 
     // Method to get the stored token for a specific VM, re-authenticating if needed
-    public TokenDetails getTokenForEdgeClientId(String edgeClientId) {
+    public TokenDetails getTokenForEdgeClientId(String edgeClientId) throws SSLException {
         TokenDetails tokenDetails = tokenStore.get(edgeClientId);
 
         if (tokenDetails == null || tokenDetails.isExpired()) {

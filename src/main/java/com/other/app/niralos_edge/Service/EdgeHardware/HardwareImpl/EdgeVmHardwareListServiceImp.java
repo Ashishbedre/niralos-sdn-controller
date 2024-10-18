@@ -1,6 +1,7 @@
 package com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.other.app.niralos_edge.Model.InternalDataModels;
 import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
 import com.other.app.niralos_edge.dto.HardwaraVM.TokenDetails;
 import io.netty.handler.ssl.SslContext;
@@ -30,16 +31,16 @@ public class EdgeVmHardwareListServiceImp {
     @Autowired
     EdgeHelperService edgeHelperService;
 
-    @Value("${proxmox.api.url}")
-    private String apiUrl;
+//    @Value("${proxmox.api.url}")
+//    private String apiUrl;
     private WebClient webClient;
 
     public String getVmScsi(String nodeName, String vmId,String edgeClientId) throws SSLException, JsonProcessingException {
         TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-
-        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient().get()
-                .uri(apiUrl + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
+                .uri("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json" + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
@@ -52,9 +53,9 @@ public class EdgeVmHardwareListServiceImp {
     public String getVmIde(String nodeName, String vmId,String edgeClientId) throws SSLException, JsonProcessingException {
         TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-
-        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient().get()
-                .uri(apiUrl + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
+                .uri("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort() +"/api2/json"+ "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
@@ -67,9 +68,9 @@ public class EdgeVmHardwareListServiceImp {
     public String getVmNet(String nodeName, Long vmId,String edgeClientId) throws SSLException, JsonProcessingException {
         TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-
-        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient().get()
-                .uri(apiUrl + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
+                .uri("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort() +"/api2/json"+ "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
@@ -90,7 +91,8 @@ public class EdgeVmHardwareListServiceImp {
     }
 
 
-    private WebClient createWebClient() throws SSLException {
+
+    private WebClient createWebClient(String baseUrl) throws SSLException {
         SslContext sslContext = SslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .build();
@@ -99,7 +101,7 @@ public class EdgeVmHardwareListServiceImp {
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
+                .baseUrl(baseUrl)
                 .build();
     }
 

@@ -2,6 +2,7 @@ package com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.other.app.niralos_edge.Model.InternalDataModels;
 import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
 import com.other.app.niralos_edge.dto.HardwaraVM.TokenDetails;
 import io.netty.handler.ssl.SslContext;
@@ -32,8 +33,8 @@ public class EdgeVMHardwaraAddServiceImpl {
     @Autowired
     EdgeVmHardwareListServiceImp edgeVmHardwareListServiceImp;
 
-    @Value("${proxmox.api.url}")
-    private String apiUrl;
+//    @Value("${proxmox.api.url}")
+//    private String apiUrl;
     private WebClient webClient;
 
     public Mono<Void> addHardDisk(Map<String, Object> request, Long vmId, String edgeClientId, String id) throws SSLException {
@@ -60,7 +61,8 @@ public class EdgeVMHardwaraAddServiceImpl {
 //        ide2: local:iso/ubuntu-22.04.4-desktop-amd64.iso,media=cdrom
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(id, requestBodyString);
-        return createWebClient().put()
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        return createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").put()
                 .uri("/nodes/pve/qemu/"+vmId+"/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -83,6 +85,8 @@ public class EdgeVMHardwaraAddServiceImpl {
                     // Conditional formatting
                     if (entry.getKey().startsWith("local")) {
                         return entry.getKey() + ":iso/" + entry.getValue();
+                    } else if (entry.getKey().startsWith("other")) {
+                        return "" + entry.getValue();
                     } else {
                         return entry.getKey() + "=" + entry.getValue();
                     }
@@ -95,7 +99,8 @@ public class EdgeVMHardwaraAddServiceImpl {
         requestBodyString = requestBodyString+",media=cdrom";
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(id, requestBodyString);
-        return createWebClient().put()
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        return createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").put()
                 .uri("/nodes/pve/qemu/"+vmId+"/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -128,7 +133,8 @@ public class EdgeVMHardwaraAddServiceImpl {
 //        ide2: local:iso/ubuntu-22.04.4-desktop-amd64.iso,media=cdrom
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(edgeVmHardwareListServiceImp.getVmNet("pve",vmId,edgeClientId), requestBodyString);
-        return createWebClient().put()
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        return createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").put()
                 .uri("/nodes/pve/qemu/"+vmId+"/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -147,7 +153,8 @@ public class EdgeVMHardwaraAddServiceImpl {
     }
 
 
-    private WebClient createWebClient() throws SSLException {
+
+    private WebClient createWebClient(String baseUrl) throws SSLException {
         SslContext sslContext = SslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .build();
@@ -156,7 +163,7 @@ public class EdgeVMHardwaraAddServiceImpl {
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
+                .baseUrl(baseUrl)
                 .build();
     }
 }

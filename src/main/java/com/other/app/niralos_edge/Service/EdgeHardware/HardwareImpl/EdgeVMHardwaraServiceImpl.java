@@ -1,6 +1,7 @@
 package com.other.app.niralos_edge.Service.EdgeHardware.HardwareImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.other.app.niralos_edge.Model.InternalDataModels;
 import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
 import com.other.app.niralos_edge.Service.EdgeHardware.EdgeVMHardwaraService;
 import com.other.app.niralos_edge.dto.HardwaraVM.*;
@@ -39,8 +40,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
     @Autowired
     InternalDataRepositorys dataRepository;
 
-    @Value("${proxmox.api.url}")
-    private String apiUrl;
+//    @Value("${proxmox.api.url}")
+//    private String apiUrl;
     private WebClient webClient;
 
     public VmDataDTOResponce getVmConfig(String nodeName, String vmId,String edgeClientId) throws SSLException, JsonProcessingException {
@@ -50,9 +51,9 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
             VmDataDTOResponce storageResponse = new VmDataDTOResponce();
             return storageResponse;
         }
-
-        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient().get()
-                .uri(apiUrl + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
+                .uri("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json" + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
@@ -68,8 +69,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
         if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {;
             return Mono.error(new RuntimeException("Invalid tokens"));
         }
-
-        return createWebClient().put()
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        return createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").put()
                 .uri("/nodes/pve/qemu/"+vmId+"/config")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -87,8 +88,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
             storageResponse.setData(null);
             return new ResponseEntity<>(storageResponse ,HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        StorageResponse response = createWebClient().get()
+        InternalDataModels dataRepo =  dataRepository.getData(edgeClientId);
+        StorageResponse response = createWebClient("https://"+dataRepo.getHypervisorIp()+":"+dataRepo.getHypervisorPort()+"/api2/json").get()
                 .uri("/nodes/pve/storage")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -114,8 +115,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
             storageResponse.setData(null);
             return new ResponseEntity<>(storageResponse ,HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        StorageResponse response = createWebClient().get()
+        InternalDataModels dataRepo =  dataRepository.getData(edgeClientId);
+        StorageResponse response = createWebClient("https://"+dataRepo.getHypervisorIp()+":"+dataRepo.getHypervisorPort()+"/api2/json").get()
                 .uri("/nodes/pve/storage")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -134,7 +135,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
     }
 
     public Mono<String> removeVmHardware(String vmId, String edgeClientId,String diskId) throws SSLException {
-        String url = apiUrl + "/nodes/pve/qemu/" + vmId + "/config";
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        String url = "https://"+data.getHypervisorIp()+":"+data.getHypervisorPort() +"/api2/json"+ "/nodes/pve/qemu/" + vmId + "/config";
         TokenDetails tokenData  = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
         String ticket = tokenData.getTicket();
         String csrfToken =  tokenData.getCsrfToken();
@@ -176,8 +178,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
             cpuModelsResponseDTO.setData(null);
             return new ResponseEntity<>(cpuModelsResponseDTO ,HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        CpuModelsResponseDTO cpuModelsResponseDTO =  createWebClient().get()
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        CpuModelsResponseDTO cpuModelsResponseDTO =  createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
                 .uri("/nodes/pve/capabilities/qemu/cpu")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -199,8 +201,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
             machineTypeResponse.setData(null);
             return new ResponseEntity<>(machineTypeResponse ,HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        MachineTypeResponse machineTypeResponse =  createWebClient().get()
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        MachineTypeResponse machineTypeResponse =  createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
                 .uri("/nodes/pve/capabilities/qemu/machines")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
@@ -219,9 +221,9 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
             List<Map<String, Object>> storageResponse = new ArrayList<>();
             return storageResponse;
         }
-
-        Mono<List<Map<String, Object>>> vmConfigDTOMono = createWebClient().get()
-                .uri(apiUrl + "/nodes/" + nodeName + "/network")
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        Mono<List<Map<String, Object>>> vmConfigDTOMono = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
+                .uri("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort() +"/api2/json"+ "/nodes/" + nodeName + "/network")
                 .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
                 .header("CSRFPreventionToken", tokenData.getCsrfToken())
                 .retrieve()
@@ -247,7 +249,8 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
     }
 
 
-    private WebClient createWebClient() throws SSLException {
+
+    private WebClient createWebClient(String baseUrl) throws SSLException {
         SslContext sslContext = SslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .build();
@@ -256,7 +259,7 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(apiUrl)
+                .baseUrl(baseUrl)
                 .build();
     }
 

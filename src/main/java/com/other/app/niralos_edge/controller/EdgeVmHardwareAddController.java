@@ -53,5 +53,17 @@ public class EdgeVmHardwareAddController {
         }
     }
 
+    @PostMapping("/addPciDevice/vm_id={vm_id}/edge_client_id={edge_client_id}")
+    public Mono<Void> addPciDevice(@RequestBody Map<String, Object> request, @PathVariable("vm_id") Long vmId,
+                                       @PathVariable ("edge_client_id") String edgeClientId) {
+        try {
+            return edgeVMHardwaraAddService.addPciDevice(request,vmId,edgeClientId);
+        } catch (SSLException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }

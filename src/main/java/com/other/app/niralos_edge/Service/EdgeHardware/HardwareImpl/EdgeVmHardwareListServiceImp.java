@@ -36,36 +36,29 @@ public class EdgeVmHardwareListServiceImp {
     private WebClient webClient;
 
     public String getVmScsi(String nodeName, String vmId,String edgeClientId) throws SSLException, JsonProcessingException {
-        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-        InternalDataModels data =  dataRepository.getData(edgeClientId);
-        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
-                .uri("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json" + "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
-                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
-                .header("CSRFPreventionToken", tokenData.getCsrfToken())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> (Map<String, Object>) response.get("data"));
-
+        Mono<Map<String, Object>> vmConfigDTOMono = getVmConfigMono(nodeName, vmId, edgeClientId);
         return edgeHelperService.extractNextScsiNumber(edgeHelperService.vmDataDTOResponce(vmConfigDTOMono));
     }
 
     public String getVmIde(String nodeName, String vmId,String edgeClientId) throws SSLException, JsonProcessingException {
-        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
-        InternalDataModels data =  dataRepository.getData(edgeClientId);
-        Mono<Map<String, Object>> vmConfigDTOMono = createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").get()
-                .uri("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort() +"/api2/json"+ "/nodes/" + nodeName + "/qemu/" + vmId + "/config")
-                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
-                .header("CSRFPreventionToken", tokenData.getCsrfToken())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> (Map<String, Object>) response.get("data"));
-
+        Mono<Map<String, Object>> vmConfigDTOMono = getVmConfigMono(nodeName, vmId, edgeClientId);
         return edgeHelperService.extractNextIdeNumber(edgeHelperService.vmDataDTOResponce(vmConfigDTOMono));
     }
 
     public String getVmNet(String nodeName, Long vmId,String edgeClientId) throws SSLException, JsonProcessingException {
+
+        Mono<Map<String, Object>> vmConfigDTOMono = getVmConfigMono(nodeName, String.valueOf(vmId), edgeClientId);
+        return edgeHelperService.extractNextnetNumber(edgeHelperService.vmDataDTOResponce(vmConfigDTOMono));
+    }
+
+    public String getPci(String nodeName, Long vmId,String edgeClientId) throws SSLException, JsonProcessingException {
+        Mono<Map<String, Object>> vmConfigDTOMono = getVmConfigMono(nodeName, String.valueOf(vmId), edgeClientId);
+        return edgeHelperService.extractNextPci(edgeHelperService.vmDataDTOResponce(vmConfigDTOMono));
+    }
+
+    private Mono<Map<String, Object>> getVmConfigMono(String nodeName, String vmId, String edgeClientId) throws SSLException, JsonProcessingException {
         TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
 
         InternalDataModels data =  dataRepository.getData(edgeClientId);
@@ -76,8 +69,7 @@ public class EdgeVmHardwareListServiceImp {
                 .retrieve()
                 .bodyToMono(Map.class)
                 .map(response -> (Map<String, Object>) response.get("data"));
-
-        return edgeHelperService.extractNextnetNumber(edgeHelperService.vmDataDTOResponce(vmConfigDTOMono));
+        return vmConfigDTOMono;
     }
 
 

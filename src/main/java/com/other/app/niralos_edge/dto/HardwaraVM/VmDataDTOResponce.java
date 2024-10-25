@@ -86,6 +86,8 @@ public class VmDataDTOResponce {
     private List<Map<String, String>> cdAndDvd = new ArrayList<>();
     private List<Map<String, String>> harddisk = new ArrayList<>();
 
+    private List<Map<String, String>> hostpci = new ArrayList<>();
+
 //    public String getIde2() {
 //        return ide2;
 //    }
@@ -300,5 +302,13 @@ public class VmDataDTOResponce {
 
     public void setHarddisk(List<Map<String, String>> harddisk) {
         this.harddisk = harddisk;
+    }
+
+    public List<Map<String, String>> getHostpci() {
+        return hostpci;
+    }
+
+    public void setHostpci(List<Map<String, String>> hostpci) {
+        this.hostpci = hostpci;
     }
 }

@@ -76,15 +76,20 @@ public class EdgeVmHardwareController {
         return edgeVMHardwaraServiceImpl.getVmOSTypes(node, vmid, edgeClientId);
     }
 
-    @GetMapping("nodes/{node}/capabilities/qemu/machines/edge_client_id={edgeClientId}")
+    @GetMapping("/nodes/{node}/capabilities/qemu/machines/edge_client_id={edgeClientId}")
     public ResponseEntity<MachineTypeResponse> getVmMachineTypes(@PathVariable String node, @PathVariable String edgeClientId) throws SSLException {
         return edgeVMHardwaraServiceImpl.getVmMachineTypes(node, edgeClientId);
     }
 
 
-    @GetMapping("nodes/{node}/network/edge_client_id={edgeClientId}")
+    @GetMapping("/nodes/{node}/network/edge_client_id={edgeClientId}")
     public List<Map<String, Object>> getNetwork(@PathVariable String node, @PathVariable String edgeClientId) throws SSLException, JsonProcessingException {
         return edgeVMHardwaraServiceImpl.getNetwork(node, edgeClientId);
     }
 
+    // Endpoint to fetch PCI devices
+    @GetMapping("/pciDevices/{node}/network/edge_client_id={edgeClientId}")
+    public Mono<List<PciDeviceDto>> getPciDevices(@PathVariable String node, @PathVariable String edgeClientId) throws SSLException {
+        return edgeVMHardwaraServiceImpl.getPciDevices(node, edgeClientId);
+    }
 }

@@ -92,6 +92,7 @@ public class EdgeHelperService {
         List<Map<String, String>> network = new ArrayList<>();
         List<Map<String, String>> cdAndDvd = new ArrayList<>();
         List<Map<String, String>> harddisk = new ArrayList<>();
+        List<Map<String, String>> hostpci = new ArrayList<>();
 
         // Processing the map for additional fields
         for (Map.Entry<String, Object> entry : hashMapResponce.entrySet()) {
@@ -108,6 +109,8 @@ public class EdgeHelperService {
                     cdAndDvd.add(parseKeyValuePair(key, value));
                 } else if (value.contains("local-lvm")) {
                     harddisk.add(parseKeyValuePair(key, value));
+                }else if (key.startsWith("hostpci")) {
+                    hostpci.add(parseKeyValuePair(key, value));
                 }
             }
         }
@@ -121,6 +124,9 @@ public class EdgeHelperService {
         }
         if (!harddisk.isEmpty()) {
             vmDataDTOResponce.setHarddisk(harddisk);
+        }
+        if (!hostpci.isEmpty()) {
+            vmDataDTOResponce.setHostpci(hostpci);
         }
 
         return vmDataDTOResponce;
@@ -193,7 +199,7 @@ public class EdgeHelperService {
         // Extract 'cdAndDvd' and 'harddisk' fields
         List<Map<String, String>> cdAndDvdList = vmConfigDTOMono.getCdAndDvd();
         List<Map<String, String>> harddiskList = vmConfigDTOMono.getHarddisk();
-        Set<Integer> usedScsiNumbers = new HashSet<>();
+        Set<Integer> usedIdeNumbers = new HashSet<>();
 
         // Process 'cdAndDvd' list for SCSI numbers
         if (cdAndDvdList != null) {
@@ -202,7 +208,7 @@ public class EdgeHelperService {
                 if (key != null && key.startsWith("ide")) {
                     try {
                         int number = Integer.parseInt(key.substring(3));
-                        usedScsiNumbers.add(number);
+                        usedIdeNumbers.add(number);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -217,7 +223,7 @@ public class EdgeHelperService {
                 if (key != null && key.startsWith("ide")) {
                     try {
                         int number = Integer.parseInt(key.substring(3));
-                        usedScsiNumbers.add(number);
+                        usedIdeNumbers.add(number);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -226,13 +232,13 @@ public class EdgeHelperService {
         }
 
         // Find the smallest unused scsiX number
-        int nextScsiNumber = 0;
-        while (usedScsiNumbers.contains(nextScsiNumber)) {
-            nextScsiNumber++;
+        int nextNetNumber = 0;
+        while (usedIdeNumbers.contains(nextNetNumber)) {
+            nextNetNumber++;
         }
 
         // Return the next available SCSI number
-        return "ide" + nextScsiNumber;
+        return "ide" + nextNetNumber;
     }
 
     public String extractNextnetNumber(VmDataDTOResponce vmConfigDTOMono) {
@@ -240,7 +246,7 @@ public class EdgeHelperService {
         List<Map<String, String>> cdAndDvdList = vmConfigDTOMono.getCdAndDvd();
         List<Map<String, String>> harddiskList = vmConfigDTOMono.getHarddisk();
         List<Map<String, String>> netList = vmConfigDTOMono.getNetwork();
-        Set<Integer> usedScsiNumbers = new HashSet<>();
+        Set<Integer> usedNetNumbers = new HashSet<>();
 
         // Process 'cdAndDvd' list for SCSI numbers
         if (cdAndDvdList != null) {
@@ -249,7 +255,7 @@ public class EdgeHelperService {
                 if (key != null && key.startsWith("net")) {
                     try {
                         int number = Integer.parseInt(key.substring(3));
-                        usedScsiNumbers.add(number);
+                        usedNetNumbers.add(number);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -264,7 +270,7 @@ public class EdgeHelperService {
                 if (key != null && key.startsWith("net")) {
                     try {
                         int number = Integer.parseInt(key.substring(3));
-                        usedScsiNumbers.add(number);
+                        usedNetNumbers.add(number);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -278,7 +284,7 @@ public class EdgeHelperService {
                 if (key != null && key.startsWith("net")) {
                     try {
                         int number = Integer.parseInt(key.substring(3));
-                        usedScsiNumbers.add(number);
+                        usedNetNumbers.add(number);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -287,15 +293,45 @@ public class EdgeHelperService {
         }
 
         // Find the smallest unused scsiX number
-        int nextScsiNumber = 0;
-        while (usedScsiNumbers.contains(nextScsiNumber)) {
-            nextScsiNumber++;
+        int nextNetNumber = 0;
+        while (usedNetNumbers.contains(nextNetNumber)) {
+            nextNetNumber++;
         }
 
         // Return the next available SCSI number
-        return "net" + nextScsiNumber;
+        return "net" + nextNetNumber;
     }
 
 
+    public String extractNextPci(VmDataDTOResponce vmConfigDTOMono) {
+        // Extract 'cdAndDvd' and 'harddisk' fields
+        List<Map<String, String>> HostpciList = vmConfigDTOMono.getHostpci();
+        Set<Integer> usedNetNumbers = new HashSet<>();
+
+        // Process 'cdAndDvd' list for SCSI numbers
+        if (HostpciList != null) {
+            for (Map<String, String> cdAndDvd : HostpciList) {
+                String key = cdAndDvd.get("key");
+                if (key != null && key.startsWith("hostpci")) {
+                    try {
+                        int number = Integer.parseInt(key.substring(7));
+                        usedNetNumbers.add(number);
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+
+
+        // Find the smallest unused scsiX number
+        int nextNetNumber = 0;
+        while (usedNetNumbers.contains(nextNetNumber)) {
+            nextNetNumber++;
+        }
+        // Return the next available SCSI number
+        return "hostpci" + nextNetNumber;
+    }
 
 }

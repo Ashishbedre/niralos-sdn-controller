@@ -144,6 +144,40 @@ public class EdgeVMHardwaraAddServiceImpl {
 
     }
 
+    public Mono<Void> addPciDevice(Map<String, Object> request, Long vmId, String edgeClientId) throws SSLException, JsonProcessingException {
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+        if (!areTokensValid(tokenData.getTicket(),tokenData.getCsrfToken())) {
+            return Mono.error(new RuntimeException("Invalid tokens"));
+        }
+
+        String requestBodyString = request.entrySet()
+                .stream()
+                .map(entry -> {
+                    // Conditional formatting
+                    if (entry.getKey().startsWith("hostpci")) {
+                        return ""+entry.getValue();
+                    } else {
+                        return entry.getKey() + "=" + entry.getValue();
+                    }
+                })
+                .collect(Collectors.joining(","));
+
+        //      body = scsi1: local-lvm:32,iothread=on
+        //net1: virtio,bridge=vmbr0,firewall=1
+//        ide2: local:iso/ubuntu-22.04.4-desktop-amd64.iso,media=cdrom
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put(edgeVmHardwareListServiceImp.getPci("pve",vmId,edgeClientId), requestBodyString);
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        return createWebClient("https://"+data.getHypervisorIp()+":"+data.getHypervisorPort()+"/api2/json").put()
+                .uri("/nodes/pve/qemu/"+vmId+"/config")
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Void.class);
+
+    }
 
     private boolean areTokensValid(String ticket, String csrfToken){
         if (ticket == null || csrfToken == null) {

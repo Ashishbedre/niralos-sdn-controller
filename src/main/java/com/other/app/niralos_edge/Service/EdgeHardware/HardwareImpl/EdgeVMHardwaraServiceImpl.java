@@ -342,6 +342,7 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
         List<Map<String, String>> network = new ArrayList<>();
         List<Map<String, String>> cdAndDvd = new ArrayList<>();
         List<Map<String, String>> harddisk = new ArrayList<>();
+        List<Map<String, String>> hostpci = new ArrayList<>();
 
         // Processing the map for additional fields
         for (Map.Entry<String, Object> entry : hashMapResponce.entrySet()) {
@@ -358,7 +359,9 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
                     cdAndDvd.add(parseKeyValuePair(key, value));
                 } else if (value.contains("local-lvm")) {
                     harddisk.add(parseKeyValuePair(key, value));
-                }
+                }else if (key.startsWith("hostpci")) {
+                hostpci.add(parseKeyValuePairForhostPciMap(key, value));
+            }
             }
         }
 
@@ -372,8 +375,29 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
         if (!harddisk.isEmpty()) {
             vmDataDTOResponce.setHarddisk(harddisk);
         }
+        if (!hostpci.isEmpty()) {
+            vmDataDTOResponce.setHostpci(hostpci);
+        }
 
         return vmDataDTOResponce;
+    }
+
+    private Map<String, String> parseKeyValuePairForhostPciMap(String key, String value) {
+        Map<String, String> keyValueMap = new HashMap<>();
+        keyValueMap.put("key", key);
+
+        // Split the value into key-value pairs and add to the map
+        String[] keyValuePairs = value.split(",");
+        int i = 0 ;
+        for (String pair : keyValuePairs) {
+            String[] splitPair = pair.split("=", 2);
+            if (splitPair.length == 2) {
+                keyValueMap.put(splitPair[0], splitPair[1]);
+            } else {
+                keyValueMap.put("Id"+i, splitPair[0]); // Handle cases where there's no '='
+            }
+        }
+        return keyValueMap;
     }
 
     private Map<String, String> parseKeyValuePair(String key, String value) {
@@ -438,5 +462,30 @@ public class EdgeVMHardwaraServiceImpl implements EdgeVMHardwaraService {
 
         // Return the next available SCSI number
         return "scsi" + nextScsiNumber;
+    }
+
+    public Mono<List<PciDeviceDto>>  getPciDevices(String node, String edgeClientId) throws SSLException {
+        // Fetch token data
+        TokenDetails tokenData = edgeAuthService.getTokenForEdgeClientId(edgeClientId);
+
+        // Validate tokens
+        if (!areTokensValid(tokenData.getTicket(), tokenData.getCsrfToken())) {
+            return Mono.error(new RuntimeException("Invalid tokens"));
+        }
+
+        InternalDataModels data =  dataRepository.getData(edgeClientId);
+        // Perform non-blocking WebClient call to Proxmox API
+        return createWebClient("https://" + data.getHypervisorIp() + ":" + data.getHypervisorPort() + "/api2/json")
+                .get()
+                .uri("/nodes/" + node + "/hardware/pci")  // Fetch PCI devices instead of qemu machines
+                .header("Cookie", "PVEAuthCookie=" + tokenData.getTicket())
+                .header("CSRFPreventionToken", tokenData.getCsrfToken())
+                .retrieve()
+                .bodyToMono(ProxmoxPciResponse.class)  // Map the response to a DTO
+                .map(ProxmoxPciResponse::getData)  // Extract the PCI device list
+                .onErrorResume(e -> {
+                    // Handle errors and return an empty list if something goes wrong
+                    return Mono.just(Collections.emptyList());
+                });
     }
 }

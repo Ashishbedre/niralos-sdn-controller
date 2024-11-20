@@ -207,42 +207,47 @@ public class HypervisorStatsServiceImpl implements HypervisorStatsService {
 			List<InternalDataModels> temp=repository.findAll();
 			
 			for (InternalDataModels internalDataModel : temp) {
-				
-				SslContext context = SslContextBuilder.forClient()
-					    .trustManager(InsecureTrustManagerFactory.INSTANCE)
-					    .build();
-					                
-				HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(context));
-			
-				WebClient proxmoxClient = WebClient.builder()
-		            //.defaultHeader(HttpHeaders.AUTHORIZATION, "PVEAPIToken=root@pam!Fm9TBVQW=c50eb962-7278-4d07-9047-20cee33eebc7")
-		            .defaultHeader(HttpHeaders.AUTHORIZATION, "PVEAPIToken="+internalDataModel.getHypervisorToken())
-		            .baseUrl("https://"+internalDataModel.getHypervisorIp()+":"+internalDataModel.getHypervisorPort()+"/api2/json")
-		            .clientConnector(new ReactorClientHttpConnector(httpClient))
-				    .build();
-				
-				
-				HypervisorNetworkStatsDto getHypervisorNetworkStats = proxmoxClient.get()
-						.uri("/nodes/pve/network/")
-				        .retrieve()
-				        .bodyToMono(HypervisorNetworkStatsDto.class)
-				        .block();
-				
-				List<InData> extractHypervisorNetworkStats = getHypervisorNetworkStats.getData();
-				
-				for (InData inData : extractHypervisorNetworkStats) {
-					
-					
-					if(hypervisorNetworkStatsRepo.checkIfInterfaceNameExistsInHypervisor(inData.getIface(),internalDataModel.getEdgeClientId())==0) {
-						
-					HypervisorNetworkStatsModel hypervisorNetworkStats = new HypervisorNetworkStatsModel(inData.getType(), inData.getIface(), inData.getAutostart(), inData.getPriority(), inData.getActive(), inData.getAddress(), inData.getBridge_ports(), inData.getGateway(), inData.getCidr(), inData.getNetmask(),internalDataModel.getEdgeClientId());
-					
-					hypervisorNetworkStatsRepo.save(hypervisorNetworkStats);
+				try {
+
+					SslContext context = SslContextBuilder.forClient()
+							.trustManager(InsecureTrustManagerFactory.INSTANCE)
+							.build();
+
+					HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(context));
+
+					WebClient proxmoxClient = WebClient.builder()
+						//.defaultHeader(HttpHeaders.AUTHORIZATION, "PVEAPIToken=root@pam!Fm9TBVQW=c50eb962-7278-4d07-9047-20cee33eebc7")
+						.defaultHeader(HttpHeaders.AUTHORIZATION, "PVEAPIToken="+internalDataModel.getHypervisorToken())
+						.baseUrl("https://"+internalDataModel.getHypervisorIp()+":"+internalDataModel.getHypervisorPort()+"/api2/json")
+						.clientConnector(new ReactorClientHttpConnector(httpClient))
+						.build();
+
+
+					HypervisorNetworkStatsDto getHypervisorNetworkStats = proxmoxClient.get()
+							.uri("/nodes/pve/network/")
+							.retrieve()
+							.bodyToMono(HypervisorNetworkStatsDto.class)
+							.block();
+
+					List<InData> extractHypervisorNetworkStats = getHypervisorNetworkStats.getData();
+
+					for (InData inData : extractHypervisorNetworkStats) {
+
+
+						if(hypervisorNetworkStatsRepo.checkIfInterfaceNameExistsInHypervisor(inData.getIface(),internalDataModel.getEdgeClientId())==0) {
+
+						HypervisorNetworkStatsModel hypervisorNetworkStats = new HypervisorNetworkStatsModel(inData.getType(), inData.getIface(), inData.getAutostart(), inData.getPriority(), inData.getActive(), inData.getAddress(), inData.getBridge_ports(), inData.getGateway(), inData.getCidr(), inData.getNetmask(),internalDataModel.getEdgeClientId());
+
+						hypervisorNetworkStatsRepo.save(hypervisorNetworkStats);
+						}
+						else {
+							hypervisorNetworkStatsRepo.updateHypervisorNetworkStats(inData.getType(), inData.getAutostart(), inData.getPriority(), inData.getActive(), inData.getAddress(), inData.getBridge_ports(), inData.getGateway(), inData.getCidr(), inData.getNetmask(), inData.getIface(),internalDataModel.getEdgeClientId());
+						}
+
 					}
-					else {
-						hypervisorNetworkStatsRepo.updateHypervisorNetworkStats(inData.getType(), inData.getAutostart(), inData.getPriority(), inData.getActive(), inData.getAddress(), inData.getBridge_ports(), inData.getGateway(), inData.getCidr(), inData.getNetmask(), inData.getIface(),internalDataModel.getEdgeClientId());
-					}
-					
+				} catch (Exception e) {
+					logger.error("Failed to retrieve or process network stats for Hypervisor IP: " +
+							internalDataModel.getHypervisorIp() + ". Error: " + e.getMessage());
 				}
 			}
 			logger.info("Successfully Processed Hypervisor Network Statistics");

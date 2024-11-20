@@ -1,13 +1,5 @@
 package com.other.app.niralos_edge.Service.UpdaterAgent.UpdaterAgentImpl;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 //import org.apache.kafka.clients.consumer.ConsumerConfig;
 //import org.apache.kafka.clients.consumer.ConsumerRecord;
 //import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,24 +10,12 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 //import org.springframework.kafka.core.KafkaTemplate;
 //import org.springframework.kafka.core.ProducerFactory;
 //import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.other.app.niralos_edge.Model.HypervisorNetworkStatsModel;
-import com.other.app.niralos_edge.Model.HypervisorStatsModel;
-import com.other.app.niralos_edge.Model.InternalDataModels;
-import com.other.app.niralos_edge.Model.ListOfIsoModel;
-import com.other.app.niralos_edge.Model.NodeUpdateDto;
-import com.other.app.niralos_edge.Model.VmNetworkStatsModel;
-import com.other.app.niralos_edge.Model.VmStatsModel;
 import com.other.app.niralos_edge.Repository.HypervisorNetworkStatsRepo;
 import com.other.app.niralos_edge.Repository.HypervisorStatsRepo;
 import com.other.app.niralos_edge.Repository.InternalDataRepositorys;
@@ -49,21 +29,13 @@ import com.other.app.niralos_edge.Service.UpdaterAgent.UpdaterService;
 import com.other.app.niralos_edge.Service.VMManagement.VmMangementService;
 import com.other.app.niralos_edge.Service.VmCreation.VmCreation;
 import com.other.app.niralos_edge.Service.VmModification.VmModificationService;
-import com.other.app.niralos_edge.dto.AddInterfaceDto;
-import com.other.app.niralos_edge.dto.CreateVmConfigDto;
-import com.other.app.niralos_edge.dto.HypervisorNetworkIntFaceCreationDto;
-import com.other.app.niralos_edge.dto.InternalDataDto;
-import com.other.app.niralos_edge.dto.PorxmoxInterfaceBody;
-import com.other.app.niralos_edge.dto.VmUpdateDto;
-import com.other.app.niralos_edge.dto.KafkaSender.KafkaMessageSenderDto;
-import com.other.app.niralos_edge.dto.updaterDto.DataEntityDto;
 
 @Service
 public class UpdaterServiceImpl implements UpdaterService {
 
 	private static final Logger logger=LoggerFactory.getLogger("EDGE: UpdaterServiceImpl");
-	@Value("${updater.agent.ip}")
-	private String updaterIp;
+//	@Value("${updater.agent.ip}")
+//	private String updaterIp;
 	
 	@Autowired
 	InternalDataRepositorys internalDataRepositorys;
@@ -137,24 +109,24 @@ public class UpdaterServiceImpl implements UpdaterService {
 	@Override
 	public String settingPartition() {
 
-		try {
-			
-			WebClient proxmoxClient = WebClient.builder()
-		                                       .baseUrl("http://"+updaterIp+":8089/api/v1")
-				                               .build();
-			
-			DataEntityDto entityDto=proxmoxClient.get()
-					                .uri("/siteAndContactInfo")
-			                        .retrieve()
-			                        .bodyToMono(DataEntityDto.class)
-			                        .block();
-			
-//			runningKafkaAgent(entityDto.getKafkaPartition(),entityDto.getDeploymentId(),entityDto.getTenantName());
-			
-		} catch (Exception e) {
-			
-			logger.error("Unable to Set Partition In Kafka"+e);
-		}
+//		try {
+//			
+//			WebClient proxmoxClient = WebClient.builder()
+//		                                       .baseUrl("http://"+updaterIp+":8089/api/v1")
+//				                               .build();
+//			
+//			DataEntityDto entityDto=proxmoxClient.get()
+//					                .uri("/siteAndContactInfo")
+//			                        .retrieve()
+//			                        .bodyToMono(DataEntityDto.class)
+//			                        .block();
+//			
+////			runningKafkaAgent(entityDto.getKafkaPartition(),entityDto.getDeploymentId(),entityDto.getTenantName());
+//			
+//		} catch (Exception e) {
+//			
+//			logger.error("Unable to Set Partition In Kafka"+e);
+//		}
 		return "Partition Set Successfully";
 	}
 

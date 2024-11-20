@@ -51,6 +51,12 @@ public class InternalServiceImpl implements InternalService{
 	@Override
 	public String saveInternalData(InternalDataDto dto) {
 		logger.info("Saving the internal Data.");
+
+		//Ashish
+		if(internalDataRepository.existsByHypervisorIpAndHypervisorPortOrHypervisorNodeName(dto.getHypervisorIp(),dto.getHypervisorPort(),dto.getNodeName())){
+			return "Data already exists";
+		}
+
 		InternalDataModels model=new InternalDataModels();
 		model.setEdgeClientId(randomString(12));
 		model.setHypervisorIp(dto.getHypervisorIp());

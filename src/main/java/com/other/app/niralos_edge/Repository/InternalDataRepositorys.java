@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import com.other.app.niralos_edge.Model.InternalDataModels;
-
+import org.springframework.data.repository.query.Param;
 
 
 public interface InternalDataRepositorys extends JpaRepository<InternalDataModels, Long> {
@@ -36,4 +36,11 @@ public interface InternalDataRepositorys extends JpaRepository<InternalDataModel
 	
 	@Query("SELECT m.hypervisorNodeName FROM InternalDataModels m WHERE m.edgeClientId=?1")
 	public String getNodeName(String edgeClientId);
+
+	//Ashish
+	@Query("SELECT CASE WHEN COUNT(i) > 0 THEN TRUE ELSE FALSE END FROM InternalDataModels i " +
+			"WHERE (i.hypervisorIp = :hypervisorIp AND i.hypervisorPort = :hypervisorPort) OR i.hypervisorNodeName = :hypervisorNodeName")
+	boolean existsByHypervisorIpAndHypervisorPortOrHypervisorNodeName(@Param("hypervisorIp") String hypervisorIp,
+																	  @Param("hypervisorPort") String hypervisorPort,
+																	  @Param("hypervisorNodeName") String hypervisorNodeName);
 }
